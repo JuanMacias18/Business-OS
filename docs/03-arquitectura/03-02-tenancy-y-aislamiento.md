@@ -3,8 +3,8 @@
 | Metadato | Valor |
 |---|---|
 | Documento | Tenancy y aislamiento multi-tenant |
-| Estado | **En revisión** |
-| Versión | 0.1.0 |
+| Estado | **Vigente** |
+| Versión | 1.0.0 |
 | Última actualización | 2026-07-02 |
 | Responsable | CTO |
 | Depende de | `ADR-002`, `ADR-007` (nota C7), `01-04` (glosario). **No** depende de `03-01` (C4): ese documento se redacta post-v1, describiendo el sistema ya real (`00-INDEX` §9) — aquí no se asume su existencia. |
@@ -179,4 +179,4 @@ FF-1 (esta suite en CI) y FF-2 (script que falla si alguna tabla nueva tiene RLS
 
 ---
 
-*Documento en revisión. Pendiente: lectura y aprobación del owner antes de pasar a Vigente. Siguiente en el orden DMV (`00-INDEX` §1.1): `03-03-modelo-de-datos-y-erd.md` (solo núcleo).*
+*Documento vigente. Aprobado por el owner el 2026-07-02, incluyendo el mecanismo de resolución de tenant vía JWT + Custom Access Token Hook (§3) y la convención de paths por tenant en Storage (§5.2).*

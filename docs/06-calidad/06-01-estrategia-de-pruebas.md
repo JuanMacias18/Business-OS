@@ -3,8 +3,8 @@
 | Metadato | Valor |
 |---|---|
 | Documento | Estrategia de pruebas — sección de aislamiento multi-tenant |
-| Estado | **En revisión** |
-| Versión | 0.1.0 (alcance: solo aislamiento; la pirámide completa se redacta cuando exista código de negocio que probar más allá de tenancy) |
+| Estado | **Vigente** |
+| Versión | 1.0.0 (alcance: solo aislamiento; la pirámide completa se redacta cuando exista código de negocio que probar más allá de tenancy) |
 | Última actualización | 2026-07-02 |
 | Responsable | QA |
 | Depende de | `03-02` (mecanismo de RLS), `03-03` (entidades del núcleo) |
@@ -91,4 +91,4 @@ Ambas quedan activas de forma permanente a partir de T2.1; ningún desarrollo po
 
 ---
 
-*Documento en revisión. Pendiente: lectura y aprobación del owner antes de pasar a Vigente. Con este documento se completa la Documentación Mínima Viable (`00-INDEX` §1.1) — el resto del catálogo se redacta just-in-time por fase.*
+*Documento vigente para su alcance de aislamiento. Aprobado por el owner el 2026-07-02. Con este documento se completa la Documentación Mínima Viable (`00-INDEX` §1.1) — el resto del catálogo se redacta just-in-time por fase.*

@@ -191,7 +191,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | 01-01 | Visión y alcance | Business OS: problema, propuesta de valor, objetivos y no-objetivos, alcance v1 vs plataforma, confirmación de nombre. | PM | — | **Vigente** |
 | 01-02 | Usuarios y JTBD | Personas multi-vertical (dueño PYME, personal/cajero, cliente final, operador de plataforma, revendedor white-label) y jobs-to-be-done. | PM | 01-01 | En cola |
 | 01-03 | Modelo de negocio y pricing | Suscripción SaaS por módulo/vertical/seat; tier white-label/revendedor; unit economics multi-tenant; costo por tenant. | PM | 01-01 | En cola |
-| 01-04 | Glosario | Vocabulario único (tenant, módulo, entitlement, vertical, white-label, region pack, RLS, anticipo, getstatus, WABA…). | TW | — | En revisión |
+| 01-04 | Glosario | Vocabulario único (tenant, módulo, entitlement, vertical, white-label, region pack, RLS, anticipo, getstatus, WABA…). | TW | — | **Vigente** |
 | 01-05 | Verticales y matriz de módulos | Qué módulos son del core y cuáles por vertical; matriz vertical × módulo; criterio para añadir verticales. | PM | 01-01 | En cola |
 
 ### 4.2 Dominio 02 — Requisitos
@@ -207,8 +207,8 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | ID | Documento | Propósito | Rol | Depende de | Estado |
 |---|---|---|---|---|---|
 | 03-01 | Visión de arquitectura (C4) | C4 (contexto/contenedores/componentes) de la plataforma modular multi-tenant; principios; estilo edge-first con event-log. | CTO | 02-02 | En cola |
-| 03-02 | Tenancy y aislamiento | Multi-tenant: shared-schema + RLS por defecto; aislamiento por niveles (esquema/DB dedicado para enterprise); resolución de tenant; blast radius. | CTO | ADR-002, ADR-007, 01-04 | En revisión |
-| 03-03 | Modelo de datos y ERD | Esquema multi-tenant (tenant_id, RLS), entidades del core (tenants, usuarios, roles, productos, inventario, pedidos, items, pagos, mensajes, event_log) y límites por módulo; ERD. **v0.1 (En revisión) cubre solo núcleo:** tenants, profiles, memberships, event_log — el resto se añade just-in-time por fase (§1.1, §9). | CTO | 03-02, 01-04 | En revisión |
+| 03-02 | Tenancy y aislamiento | Multi-tenant: shared-schema + RLS por defecto; aislamiento por niveles (esquema/DB dedicado para enterprise); resolución de tenant; blast radius. | CTO | ADR-002, ADR-007, 01-04 | **Vigente** |
+| 03-03 | Modelo de datos y ERD | Esquema multi-tenant (tenant_id, RLS), entidades del core (tenants, usuarios, roles, productos, inventario, pedidos, items, pagos, mensajes, event_log) y límites por módulo; ERD. **v1.0 (Vigente) cubre solo núcleo:** tenants, profiles, memberships, event_log — el resto se añade just-in-time por fase (§1.1, §9). | CTO | 03-02, 01-04 | **Vigente** |
 | 03-04 | Sistema de módulos y entitlements | Registro de módulos, activación por tenant/vertical, feature flags, límites de acoplamiento entre módulos, extensibilidad. **(Pilar nuevo.)** | CTO | 03-01, ADR-008, 01-05 | En cola |
 | 03-05 | Máquina de estados del pedido | FSM del módulo Pedidos (v1 restaurantes): estados, transiciones, reserva de stock, expiraciones, reversas, idempotencia. | CTO | 03-03, ADR-006 | En cola |
 | 03-06 | Contrato de API y Edge Functions | Endpoints internos y Edge Functions (webhooks pago/WhatsApp, envío de mensajes, API del panel): contratos, validación de firma, idempotencia, contexto de tenant. | CTO | 03-03, 03-04 | En cola |
@@ -258,7 +258,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 
 | ID | Documento | Propósito | Rol | Depende de | Estado |
 |---|---|---|---|---|---|
-| 06-01 | Estrategia de pruebas | Pirámide; **pruebas de aislamiento multi-tenant como categoría de primera clase**; contract tests de webhooks; idempotencia/concurrencia de stock; sandbox de pasarelas/Meta. **v0.1 (En revisión) cubre solo la sección de aislamiento** — el resto se añade just-in-time en Fases 4-6. | QA | 03-02, 03-03 | En revisión |
+| 06-01 | Estrategia de pruebas | Pirámide; **pruebas de aislamiento multi-tenant como categoría de primera clase**; contract tests de webhooks; idempotencia/concurrencia de stock; sandbox de pasarelas/Meta. **v1.0 (Vigente) cubre solo la sección de aislamiento** — el resto se añade just-in-time en Fases 4-6. | QA | 03-02, 03-03 | **Vigente** |
 | 06-02 | Definición de Hecho y release | DoD (incluye verificación de RLS), checklist de release, versiones, changelog. | QA | 06-01, 05-03 | En cola |
 
 ### 4.8 Dominio 07 — Entrega y planificación
@@ -331,16 +331,16 @@ Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 
 | Métrica | Valor |
 |---|---|
 | Documentos totales (catálogo) | 35 |
-| Vigentes | 1 (`01-01`) |
-| En revisión | 4 (`01-04`, `03-02`, `03-03` v0.1 núcleo, `06-01` v0.1 aislamiento — pendientes de aprobación del owner) |
+| Vigentes | 5 (`01-01`, `01-04`, `03-02`, `03-03` v1.0 núcleo, `06-01` v1.0 aislamiento) |
+| En revisión | 0 |
 | En redacción | 1 (`08-03`) |
 | En cola | 29 |
 | ADR totales | 12 |
 | ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
 | ADR Propuestos | 0 |
-| Próximo documento a redactar | Ninguno pendiente de DMV — con `06-01` v0.1 se completa la Documentación Mínima Viable (§1.1). Siguiente paso: T2.1 (código, walking skeleton). El resto del catálogo se redacta just-in-time por fase (§9). |
+| Próximo documento a redactar | Ninguno pendiente de DMV — la Documentación Mínima Viable está completa y aprobada (§1.1). Siguiente paso: T2.1 (código, walking skeleton). El resto del catálogo se redacta just-in-time por fase (§9). |
 | Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---
 
-*Fin del índice maestro v2.1.0. Documentación Mínima Viable completa (`01-04`, `03-02`, `03-03` núcleo, `06-01` aislamiento — las 4 en estado En revisión, pendientes de aprobación del owner). Siguiente artefacto: código de T2.1 (walking skeleton), no un documento.*
+*Fin del índice maestro v2.1.0. Documentación Mínima Viable completa y aprobada por el owner el 2026-07-02 (`01-04`, `03-02`, `03-03` núcleo, `06-01` aislamiento — las 4, Vigentes). Siguiente artefacto: código de T2.1 (walking skeleton), no un documento.*

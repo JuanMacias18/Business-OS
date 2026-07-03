@@ -3,8 +3,8 @@
 | Metadato | Valor |
 |---|---|
 | Documento | Modelo de datos y ERD — núcleo |
-| Estado | **En revisión** |
-| Versión | 0.1.0 (alcance: solo núcleo; se amplía en fases posteriores, ver §7) |
+| Estado | **Vigente** |
+| Versión | 1.0.0 (alcance: solo núcleo; se amplía en fases posteriores, ver §7) |
 | Última actualización | 2026-07-02 |
 | Responsable | CTO |
 | Depende de | `03-02` (mecanismo de RLS y `current_tenant_id()`), `01-04` (glosario) |
@@ -238,4 +238,4 @@ Cada tabla de esta versión necesita, como mínimo, los 4 casos de `03-02` §8 (
 
 ---
 
-*Documento en revisión. Pendiente: lectura y aprobación del owner antes de pasar a Vigente. Siguiente en el orden DMV (`00-INDEX` §1.1): `06-01-estrategia-de-pruebas.md` (solo la sección de pruebas de aislamiento).*
+*Documento vigente para su alcance de núcleo. Aprobado por el owner el 2026-07-02, incluyendo el patrón de la primera membership creada por `service_role` en el onboarding (§4).*

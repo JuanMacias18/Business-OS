@@ -3,8 +3,8 @@
 | Metadato | Valor |
 |---|---|
 | Documento | Glosario de MysaasTech (Business OS) |
-| Estado | **En revisión** |
-| Versión | 0.1.0 |
+| Estado | **Vigente** |
+| Versión | 1.0.0 |
 | Última actualización | 2026-07-02 |
 | Responsable | TW (con revisión de CTO) |
 | Depende de | — (documento base de vocabulario, no asume ninguna decisión previa) |
@@ -120,4 +120,4 @@ Vocabulario único del proyecto. Todo documento que use uno de estos términos l
 
 ---
 
-*Documento en revisión. Pendiente: lectura y aprobación del owner antes de pasar a Vigente. Siguiente en el orden DMV (`00-INDEX` §1.1): `03-02-tenancy-y-aislamiento.md`.*
+*Documento vigente. Aprobado por el owner el 2026-07-02.*
