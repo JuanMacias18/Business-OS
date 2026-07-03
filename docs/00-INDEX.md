@@ -9,9 +9,10 @@
 | Metadato | Valor |
 |---|---|
 | Estado del índice | **Vigente** |
-| Versión | 2.0.0 |
+| Versión | 2.1.0 |
 | Última actualización | 2026-07-02 |
 | Cambio v1→v2 | Pivote de "SaaS de un vertical, instancia aislada por cliente" a "Business OS multi-tenant, modular y white-label". |
+| Cambio v2.0.0→v2.1.0 | Correcciones de auditoría 2026-07-02 (parches PA-1..PA-12) tras sesión de decisiones T0.1: ADR-001/002/003/008/009/010/011/012 pasan a Aceptado; D-1, D-2, D-4, D-6, D-8 cerradas; D-3 con disparador definido; DMV añadida (§1.1); métricas de §8 recalculadas. |
 | Responsable | CTO / Arquitecto |
 | Idioma del repo | Español (es-CO) |
 
@@ -48,6 +49,18 @@ Se separan dos planos deliberadamente:
 - **Alcance de producto v1:** estrecho. Un vertical (**restaurantes**), una región (**Colombia**), solo módulos del core. Las capacidades de plataforma (más verticales, white-label profundo, más regiones) se encienden por fases sobre la misma arquitectura, sin reescribirla.
 
 Racional: las plataformas horizontales exitosas se *extraen* de un vertical validado con clientes reales; no se diseñan universales en el vacío. Construir el núcleo para 12 verticales antes del primer cliente pagando es el principal riesgo de no lanzar. Ver `03-11/ADR-011`.
+
+### 1.1 Documentación mínima viable (DMV) para iniciar código
+
+33+ documentos y 12 ADR antes de escribir código reintroduce, en el plano documental, el mismo riesgo que ADR-011 elimina en el de producto: no lanzar nunca. Por eso el código del núcleo arranca con la **mínima documentación que lo desbloquea**, no con el catálogo completo:
+
+- `01-04` Glosario
+- `03-02` Tenancy y aislamiento
+- `03-03` Modelo de datos (solo núcleo: tenants, users/profiles, memberships+roles, event_log)
+- `06-01` (solo la sección de pruebas de aislamiento)
+- Los ADR ya *Aceptados* (ver §4.4)
+
+El resto del catálogo se redacta **just-in-time por hito**, según el mapa doc→fase de `docs/PLAN-DE-ACCION-claude-code.md` §9. Las tres auditorías finales de §6 se reemplazan por mini-auditorías por lote al cierre de cada fase.
 
 ---
 
@@ -149,7 +162,7 @@ mysaastech-docs/
 | **Vigente** | Completo, revisado, sin "por completar". Único estado válido para producción. |
 | **Obsoleto** | Reemplazado; se conserva con enlace al sucesor. |
 
-La columna **Estado** de los catálogos es un rastreador de entrega, no una sección incompleta dentro de un documento. Ningún documento *Vigente* contiene ejemplos, "TBD" ni "por completar".
+La columna **Estado** de los catálogos es un rastreador de entrega, no una sección incompleta dentro de un documento. Ningún documento *Vigente* contiene contenido de relleno, placeholders, "TBD" ni "por completar".
 
 ### 3.3 Versionado
 
@@ -179,7 +192,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | 01-02 | Usuarios y JTBD | Personas multi-vertical (dueño PYME, personal/cajero, cliente final, operador de plataforma, revendedor white-label) y jobs-to-be-done. | PM | 01-01 | En cola |
 | 01-03 | Modelo de negocio y pricing | Suscripción SaaS por módulo/vertical/seat; tier white-label/revendedor; unit economics multi-tenant; costo por tenant. | PM | 01-01 | En cola |
 | 01-04 | Glosario | Vocabulario único (tenant, módulo, entitlement, vertical, white-label, region pack, RLS, anticipo, getstatus, WABA…). | TW | — | En cola |
-| 01-05 | Verticales y matriz de módulos | Qué módulos son del core y cuáles por vertical; matriz vertical × módulo; criterio para añadir verticales. | PM | 01-01, 03-04 | En cola |
+| 01-05 | Verticales y matriz de módulos | Qué módulos son del core y cuáles por vertical; matriz vertical × módulo; criterio para añadir verticales. | PM | 01-01 | En cola |
 
 ### 4.2 Dominio 02 — Requisitos
 
@@ -196,7 +209,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | 03-01 | Visión de arquitectura (C4) | C4 (contexto/contenedores/componentes) de la plataforma modular multi-tenant; principios; estilo edge-first con event-log. | CTO | 02-02 | En cola |
 | 03-02 | Tenancy y aislamiento | Multi-tenant: shared-schema + RLS por defecto; aislamiento por niveles (esquema/DB dedicado para enterprise); resolución de tenant; blast radius. | CTO | 03-01, ADR-002 | En cola |
 | 03-03 | Modelo de datos y ERD | Esquema multi-tenant (tenant_id, RLS), entidades del core (tenants, usuarios, roles, productos, inventario, pedidos, items, pagos, mensajes, event_log) y límites por módulo; ERD. | CTO | 03-01, 03-04 | En cola |
-| 03-04 | Sistema de módulos y entitlements | Registro de módulos, activación por tenant/vertical, feature flags, límites de acoplamiento entre módulos, extensibilidad. **(Pilar nuevo.)** | CTO | 03-01, ADR-008 | En cola |
+| 03-04 | Sistema de módulos y entitlements | Registro de módulos, activación por tenant/vertical, feature flags, límites de acoplamiento entre módulos, extensibilidad. **(Pilar nuevo.)** | CTO | 03-01, ADR-008, 01-05 | En cola |
 | 03-05 | Máquina de estados del pedido | FSM del módulo Pedidos (v1 restaurantes): estados, transiciones, reserva de stock, expiraciones, reversas, idempotencia. | CTO | 03-03, ADR-006 | En cola |
 | 03-06 | Contrato de API y Edge Functions | Endpoints internos y Edge Functions (webhooks pago/WhatsApp, envío de mensajes, API del panel): contratos, validación de firma, idempotencia, contexto de tenant. | CTO | 03-03, 03-04 | En cola |
 | 03-07 | Capa de pagos multi-pasarela | Abstracción de pasarelas (Nequi, Wompi, Mercado Pago, PayU, ePayco); sin agregador, fondos directos al tenant; credenciales por tenant cifradas; getstatus como verdad. | CTO | 03-05, 03-06, ADR-003 | En cola |
@@ -209,17 +222,18 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 
 | ADR | Título | Decisión resumida | Estado |
 |---|---|---|---|
-| ADR-001 | WhatsApp: Meta Cloud API directo | Integración directa con Graph API. **En revisión:** el alta a escala en multi-tenant reabre BSP/Embedded Signup (ver D-3). | Aceptado — en revisión |
-| ADR-002 | Arquitectura multi-tenant con RLS | Postgres compartido con `tenant_id` + RLS como aislamiento por defecto; esquema/DB dedicado para tiers enterprise. **Reemplaza** la decisión v1 de instancia aislada por cliente. | Propuesto |
-| ADR-003 | Pagos multi-pasarela, sin agregador | Abstracción de pasarelas; cada tenant usa sus credenciales y recibe fondos directo; la plataforma nunca custodia dinero. | Propuesto |
+| ADR-001 | WhatsApp: Meta Cloud API directo | Integración directa con Graph API. Candidato a supersede vía D-3. Disparador: el onboarding manual de WABA supere ≈15-20 tenants activos, o el tiempo de alta por tenant no baje pese al runbook (07-01/T7.1). | Aceptado |
+| ADR-002 | Arquitectura multi-tenant con RLS | Postgres compartido con `tenant_id` + RLS como aislamiento por defecto; esquema/DB dedicado para tiers enterprise. **Reemplaza** la decisión v1 de instancia aislada por cliente. v1 implementa exclusivamente shared-schema + RLS; el aislamiento dedicado es una costura sin código hasta demanda enterprise real. | Aceptado |
+| ADR-003 | Pagos multi-pasarela, sin agregador | Abstracción de pasarelas; cada tenant usa sus credenciales y recibe fondos directo; la plataforma nunca custodia dinero. | Aceptado |
 | ADR-004 | n8n fuera de la ruta crítica | La ruta pedido→pago→inventario va en Edge Functions; n8n solo para automatizaciones adyacentes. | Aceptado |
 | ADR-005 | Edge Functions como webhook | Supabase Edge Functions como endpoint HTTPS de pasarelas y Meta. | Aceptado |
 | ADR-006 | Reserva de stock en la solicitud de pago | Stock reservado al generar la solicitud, no al confirmar; expiración libera la reserva. | Aceptado |
 | ADR-007 | Stack del panel (frontend) | React + Vite + Tailwind en Vercel para el panel; theming compatible con white-label. | Aceptado |
-| ADR-008 | Sistema de módulos y entitlements | Núcleo modular con activación por tenant/vertical vía registro de módulos + entitlements. | Propuesto |
-| ADR-009 | White-label: theming y dominios | Branding y dominios por tenant mediante tokens de tema y resolución de dominio. | Propuesto |
-| ADR-010 | Regionalización por region packs | La lógica regional (pagos, impuestos, datos, locale) vive en paquetes configurables, no hardcodeada. | Propuesto |
-| ADR-011 | Alcance v1: un vertical, una región | Arquitectura plataforma-ready; producto v1 = restaurantes + Colombia + módulos del core. | Propuesto |
+| ADR-008 | Sistema de módulos y entitlements | Núcleo modular con activación por tenant/vertical vía registro de módulos + entitlements. | Aceptado |
+| ADR-009 | White-label: theming y dominios | Branding y dominios por tenant mediante tokens de tema y resolución de dominio. Alcance v1 = solo la costura (branding básico: logo y colores); dominios personalizados y portal de revendedor diferidos. | Aceptado (costura) |
+| ADR-010 | Regionalización por region packs | La lógica regional (pagos, impuestos, datos, locale) vive en paquetes configurables, no hardcodeada. Alcance v1 = solo la costura; único region pack implementado es Colombia. | Aceptado (costura) |
+| ADR-011 | Alcance v1: un vertical, una región | Arquitectura plataforma-ready; producto v1 = restaurantes + Colombia + módulos del core. | Aceptado |
+| ADR-012 | Estructura de repositorios: monorepo pnpm | Monorepo (`apps/panel`, `packages/core`, `supabase/`, `docs/`) para PRs atómicos doc+código y un solo CI; alternativa multi-repo descartada por carga operativa de un equipo de una persona. | Aceptado |
 
 ### 4.5 Dominio 04 — Seguridad y cumplimiento
 
@@ -260,6 +274,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 |---|---|---|---|---|---|
 | 08-01 | Convenciones de código, repos y módulos | Estructura del núcleo reutilizable, naming, TypeScript, estilo, estructura de Edge Functions, **cómo se autoría un módulo/vertical nuevo** sin acoplar el core. | CTO | 03-04, 03-06 | En cola |
 | 08-02 | Estándares de documentación | Cómo se mantiene el repo: formato, proceso ADR, versionado, definición de "documento vigente". | TW | — | En cola |
+| 08-03 | Flujo de trabajo con Claude Code (CLAUDE.md) | Guardrails del agente: plan-antes-de-ejecutar, dev→main con aprobación, reglas RLS/service_role, reglas de sesión, Definición de Hecho. El archivo vive en la raíz del repo de código; este ítem lo referencia. | CTO | 08-01 | En redacción |
 
 ---
 
@@ -278,41 +293,53 @@ Un requisito sin prueba, o una prueba sin requisito, es un defecto de documentac
 
 ---
 
-## 6. Protocolo de auditoría final
+## 6. Protocolo de auditoría
 
-Con los 33 documentos y los 11 ADR *Vigentes*, se ejecutan **tres auditorías independientes**, cada una buscando también oportunidades de mejora:
+**Mini-auditoría por lote**: al cierre de cada fase del plan de entrega (`docs/PLAN-DE-ACCION-claude-code.md`) se auditan consistencia, glosario, dependencias y trazabilidad de los documentos tocados en esa fase — no del catálogo completo.
+
+**Auditoría final ligera**, antes de declarar el paquete terminado, sobre las tres dimensiones originales:
 
 1. **Arquitectura** — coherencia C4 ↔ tenancy ↔ datos ↔ módulos ↔ estados ↔ contratos; ADR y diagramas sin contradicción; RNF alcanzables; detección de sobre-ingeniería; que el aislamiento multi-tenant sea íntegro.
 2. **Documentación** — sin contradicciones, sin duplicados, sin vacíos; glosario respetado; dependencias alineadas; trazabilidad (sección 5) intacta.
 3. **Producto** — el v1 (un vertical, una región) es vendible y entregable; unit economics de suscripción cierran; el onboarding es realista dados los tiempos de aprobación de pasarela/Meta que no controlamos.
 
-Tras las tres auditorías se actualiza lo afectado y solo entonces el paquete se declara **terminado**.
+Tras la auditoría final ligera se actualiza lo afectado y solo entonces el paquete se declara **terminado**.
 
 ---
 
 ## 7. Decisiones abiertas (requieren confirmación del owner)
 
+Las decisiones cerradas se conservan en esta tabla por trazabilidad (referencian el momento y mecanismo del cierre).
+
 | # | Decisión abierta | Documento que la cierra | Propuesta por defecto |
 |---|---|---|---|
-| D-1 | Confirmar **nombre** del producto/plataforma | 01-01 | Mantener "MysaasTech". Nota: al ser white-label, el cliente final ve la marca del tenant; el nombre es B2B/ventas, no de cara al consumidor — baja urgencia externa, pero conviene un nombre de plataforma más fuerte. |
-| D-2 | Validar **alcance de v1** (ADR-011): un vertical (restaurantes) + CO | 01-01 / 07-01 | Aprobado: arquitectura plataforma-ready, producto v1 estrecho. |
-| D-3 | **WhatsApp a escala**: Meta directo con alta manual vs BSP/Embedded Signup (reabre ADR-001) | 03-08 | Meta directo en v1 (pocos tenants); evaluar BSP como criterio de disparo al crecer el onboarding. |
-| D-4 | **Estrategia de aislamiento** por defecto y tiers | 03-02 | shared-schema + `tenant_id` + RLS por defecto; esquema/DB dedicado solo para tenants enterprise. |
-| D-5 | **Modelo de pricing** de suscripción (por módulo/vertical/seat) y tier white-label/revendedor | 01-03 | Suscripción mensual por tenant con módulos incluidos por plan; add-ons por módulo; tier revendedor. Cifras a confirmar. |
-| D-6 | **Módulos del core** y primeros módulos verticales de restaurantes | 01-05 / 02-01 | Core: identidad/tenancy, catálogo, pedidos, pagos, inventario, notificaciones WhatsApp, panel. Restaurantes: mesas/comandas o modo pedido-para-llevar (a definir). |
+| D-1 | Confirmar **nombre** del producto/plataforma | 01-01 | **Cerrada (T0.1, 2026-07-02).** Se mantiene "MysaasTech" como nombre de trabajo. Al ser white-label, el cliente final ve la marca del tenant; el nombre es B2B/ventas — renombrar después sigue siendo barato. |
+| D-2 | Validar **alcance de v1** (ADR-011): un vertical (restaurantes) + CO | 01-01 / 07-01 | **Cerrada.** ADR-011 → Aceptado (ver §4.4). |
+| D-3 | **WhatsApp a escala**: Meta directo con alta manual vs BSP/Embedded Signup (reabre ADR-001) | 03-08 | **Abierta, con disparador definido (T0.1).** Meta directo en v1; reconsiderar BSP/Embedded Signup cuando el onboarding manual de WABA supere ≈15-20 tenants activos, o el tiempo de alta por tenant no baje pese al runbook de onboarding (07-01/T7.1). |
+| D-4 | **Estrategia de aislamiento** por defecto y tiers | 03-02 | **Cerrada.** ADR-002 → Aceptado: shared-schema + `tenant_id` + RLS por defecto; esquema/DB dedicado = costura sin código, solo para tiers enterprise futuros (nota C7). |
+| D-5 | **Modelo de pricing** de suscripción (por módulo/vertical/seat) y tier white-label/revendedor | 01-03 | **Abierta.** Se define con costos reales en Fase 7 (`01-03`); no bloquea Fase 0. |
+| D-6 | **Módulos del core** y primeros módulos verticales de restaurantes | 01-05 / 02-01 | **Cerrada (T0.1).** Flujo: para-llevar/domicilio; dine-in diferido (01-01 §6.2). Módulos v1: identidad/tenancy, catálogo, pedidos, pagos, inventario, notificaciones WhatsApp, panel — y nada más. |
+| D-7 | Primera pasarela de v1: Nequi API directa vs. pasarela con Nequi como método de pago | ADR-003 / 03-07 | **Abierta, por diseño.** Se decide con el spike de sandbox de T0.5 (semana 1); gana la que dé sandbox funcional primero. Verificar condiciones vigentes (comisiones, tiempos de dispersión) antes de fijarlo en el ADR. |
+| D-8 | Estructura de repositorios | ADR-012 / 05-03 | **Cerrada (T0.1).** Monorepo pnpm (`apps/panel`, `packages/core`, `supabase/`, `docs/`). |
 
 ---
 
 ## 8. Estado global del paquete
 
+Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 ADR). El índice (`00-INDEX.md`) no es una fila del catálogo — su vigencia se rastrea en el metadato "Estado del índice" (§ encabezado), no en este conteo.
+
 | Métrica | Valor |
 |---|---|
-| Documentos totales | 33 + 11 ADR |
-| Vigentes | 2 (índice v2.0.0 + 01-01) |
-| En cola | 31 + 11 ADR |
-| Próximo documento a redactar | `01-02-usuarios-y-jtbd.md` |
-| Auditorías finales | Pendientes |
+| Documentos totales (catálogo) | 35 |
+| Vigentes | 1 (`01-01`) |
+| En redacción | 1 (`08-03`) |
+| En cola | 33 |
+| ADR totales | 12 |
+| ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
+| ADR Propuestos | 0 |
+| Próximo documento a redactar | `01-04-glosario.md` (orden DMV, §1.1 — no el orden del catálogo completo) |
+| Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---
 
-*Fin del índice maestro v2.0.0. Siguiente artefacto según orden de entrega: `01-01-vision-y-alcance.md`.*
+*Fin del índice maestro v2.1.0. Siguiente artefacto según el orden de la Documentación Mínima Viable (§1.1): `01-04-glosario.md`.*

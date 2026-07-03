@@ -4,8 +4,9 @@
 |---|---|
 | Documento | Visión y alcance de MysaasTech (Business OS) |
 | Estado | **Vigente** |
-| Versión | 1.0.0 |
+| Versión | 1.0.1 |
 | Última actualización | 2026-07-02 |
+| Cambio v1.0.0→v1.0.1 | Correcciones de auditoría 2026-07-02 (PA-10, PA-11): §7.2 ya no da por implementada una pasarela antes de D-7; §14 alinea el estado de ADR-011 con su aceptación formal en T0.1. |
 | Responsable | PM (con revisión de CTO) |
 | Depende de | — (documento raíz del producto) |
 | Es dependencia de | 01-02, 01-03, 01-05, 02-01, 02-02, 03-01, 07-01, y los ADR asociados |
@@ -99,7 +100,7 @@ Se listan explícitamente para blindar el alcance:
 
 - **Multi-tenancy** con aislamiento por RLS (nivel por defecto) y aislamiento dedicado opcional para tiers superiores (`03-02`, `ADR-002`).
 - **Sistema de módulos y entitlements**: activación de módulos por tenant/vertical (`03-04`, `ADR-008`).
-- **Capa de pagos multi-pasarela**: abstracción que hoy implementa Nequi y admite Wompi/Mercado Pago/PayU/ePayco después sin reescribir la máquina de estados (`03-07`, `ADR-003`).
+- **Capa de pagos multi-pasarela**: abstracción que en v1 implementa únicamente la pasarela definida en D-7 (spike de sandbox, T0.5) y admite Wompi/Mercado Pago/PayU/ePayco después sin reescribir la máquina de estados (`03-07`, `ADR-003`).
 - **Costuras de white-label**: tokens de tema y resolución de tenant (`03-09`, `ADR-009`).
 - **Costuras de regionalización**: estructura de *region packs* (`03-10`, `ADR-010`).
 
@@ -167,7 +168,7 @@ Métricas operativas y de negocio detalladas (activación, retención, MRR, chur
 
 ## 14. Decisiones y documentos relacionados
 
-- `03-11/ADR-011` — Alcance v1: un vertical, una región; arquitectura plataforma-ready. **(Validado por el owner.)**
+- `03-11/ADR-011` — Alcance v1: un vertical, una región; arquitectura plataforma-ready. **(Aceptado — sesión de decisiones T0.1, ver 00-INDEX §4.4.)**
 - `03-11/ADR-002` — Arquitectura multi-tenant con RLS (reemplaza la decisión previa de instancia aislada por cliente).
 - `03-11/ADR-008` — Sistema de módulos y entitlements.
 - `01-05` — Verticales y matriz de módulos (materializa la estrategia de las dos familias).
@@ -175,4 +176,4 @@ Métricas operativas y de negocio detalladas (activación, retención, MRR, chur
 
 ---
 
-*Documento vigente. Siguiente en el orden de entrega: `01-02-usuarios-y-jtbd.md`.*
+*Documento vigente. Siguiente en el orden de la Documentación Mínima Viable (00-INDEX §1.1): `01-04-glosario.md`.*
