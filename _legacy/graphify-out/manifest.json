@@ -1,0 +1,47 @@
+{
+  "supabase/functions/whatsapp-webhook/db.ts": {
+    "mtime": 1782858744.57173,
+    "ast_hash": "885bc7d01b75c260ef336a117d36238b",
+    "semantic_hash": "885bc7d01b75c260ef336a117d36238b"
+  },
+  "supabase/functions/whatsapp-webhook/index.ts": {
+    "mtime": 1782858767.120364,
+    "ast_hash": "d2e2118633955f778dab202dbbe365c2",
+    "semantic_hash": "d2e2118633955f778dab202dbbe365c2"
+  },
+  "supabase/functions/whatsapp-webhook/parser.ts": {
+    "mtime": 1782858715.7541397,
+    "ast_hash": "afa9aff5e0fc84e89a5cc81e89505606",
+    "semantic_hash": "afa9aff5e0fc84e89a5cc81e89505606"
+  },
+  "supabase/migrations/0001_init_schema.sql": {
+    "mtime": 1782858685.4266138,
+    "ast_hash": "af0f05e42319f2838f691fe51ce157f4",
+    "semantic_hash": "af0f05e42319f2838f691fe51ce157f4"
+  },
+  "supabase/seed.sql": {
+    "mtime": 1782858687.7027297,
+    "ast_hash": "d10f931272d90eb788082579f3e9265a",
+    "semantic_hash": "d10f931272d90eb788082579f3e9265a"
+  },
+  "tests/parser.test.ts": {
+    "mtime": 1782858797.4734056,
+    "ast_hash": "69f28d54009b2a93645cb86dce3cb349",
+    "semantic_hash": "69f28d54009b2a93645cb86dce3cb349"
+  },
+  "README.md": {
+    "mtime": 1782858237.9971106,
+    "ast_hash": "f1733519a539713f28734b88dd3893a6",
+    "semantic_hash": "f1733519a539713f28734b88dd3893a6"
+  },
+  "docs/01-meta-cloud-api-setup.md": {
+    "mtime": 1782858663.4827588,
+    "ast_hash": "eadfc70e65e950778bfae5e9c3f6bafe",
+    "semantic_hash": "eadfc70e65e950778bfae5e9c3f6bafe"
+  },
+  "whatsapp_assistant/README.md": {
+    "mtime": 1782858782.3070204,
+    "ast_hash": "c991d69029d085a67781c591708a41b8",
+    "semantic_hash": "c991d69029d085a67781c591708a41b8"
+  }
+}
