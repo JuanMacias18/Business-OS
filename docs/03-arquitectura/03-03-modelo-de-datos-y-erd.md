@@ -156,7 +156,7 @@ create policy "miembros leen su tenant"
   using (id = public.current_tenant_id());
 ```
 
-**`profiles`** — cada quien lee/edita su propio perfil; además puede leer (no editar) los perfiles de quienes comparten al menos un tenant con él (para mostrar, p. ej., quién atendió un pedido):
+**`profiles`** — cada quien lee/edita su propio perfil; además puede leer (no editar) los perfiles de quienes comparten al menos un tenant con él (para mostrar, p. ej., quién atendió un pedido). La subconsulta contra `memberships` va envuelta en una función `security definer` (`03-02` §5.6: una policy no puede consultar otra tabla con RLS "desde adentro" sin ese envoltorio — la RLS de `memberships` le ocultaría la fila del compañero):
 
 ```sql
 alter table public.profiles enable row level security;
@@ -166,19 +166,27 @@ create policy "cada quien lee y edita su perfil"
   using (id = (select auth.uid()))
   with check (id = (select auth.uid()));
 
+create or replace function public.shares_tenant_with(other_user_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.memberships mine
+    join public.memberships theirs on theirs.tenant_id = mine.tenant_id
+    where mine.user_id = auth.uid()
+      and theirs.user_id = other_user_id
+  )
+$$;
+
 create policy "leer perfiles de companeros de tenant"
   on public.profiles for select
-  using (
-    exists (
-      select 1 from public.memberships mine
-      join public.memberships theirs on theirs.tenant_id = mine.tenant_id
-      where mine.user_id = (select auth.uid())
-        and theirs.user_id = public.profiles.id
-    )
-  );
+  using (public.shares_tenant_with(id));
 ```
 
-**`memberships`** — un usuario ve sus propias membresías; la primera membership de un tenant nuevo (su dueño/admin inicial) la crea la Edge Function de onboarding con `service_role` (no hay forma de que RLS de cliente resuelva ese caso inicial sin un admin previo — `03-02` §5.1). Invitar a alguien más a un tenant existente sí pasa por RLS de cliente, restringido a quien ya es `admin` de ese tenant:
+**`memberships`** — un usuario ve sus propias membresías; la primera membership de un tenant nuevo (su dueño/admin inicial) la crea la Edge Function de onboarding con `service_role` (no hay forma de que RLS de cliente resuelva ese caso inicial sin un admin previo — `03-02` §5.1). Invitar a alguien más a un tenant existente sí pasa por RLS de cliente, restringido a quien ya es `admin` de ese tenant. Igual que arriba, el chequeo "¿soy admin de este tenant?" va en una función `security definer`: una policy de `memberships` que se consulta a sí misma directamente falla con `infinite recursion detected in policy` (`03-02` §5.6):
 
 ```sql
 alter table public.memberships enable row level security;
@@ -187,16 +195,26 @@ create policy "usuario ve sus membresias"
   on public.memberships for select
   using (user_id = (select auth.uid()));
 
+create or replace function public.is_tenant_admin(target_tenant_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.memberships m
+    where m.tenant_id = target_tenant_id
+      and m.user_id = auth.uid()
+      and m.role = 'admin'
+  )
+$$;
+
 create policy "admin invita miembros de su tenant"
   on public.memberships for insert
   with check (
     tenant_id = public.current_tenant_id()
-    and exists (
-      select 1 from public.memberships m
-      where m.tenant_id = public.current_tenant_id()
-        and m.user_id = (select auth.uid())
-        and m.role = 'admin'
-    )
+    and public.is_tenant_admin(tenant_id)
   );
 ```
 

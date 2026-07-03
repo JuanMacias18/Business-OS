@@ -96,11 +96,18 @@ create policy "aislamiento por tenant"
   on public.<tabla> for all
   using (tenant_id = public.current_tenant_id())
   with check (tenant_id = public.current_tenant_id());
+
+-- RLS restringe FILAS, pero Postgres exige ademas el privilegio de
+-- tabla de base para el rol; sin este GRANT, toda query del rol
+-- authenticated falla con "permission denied" antes de llegar a
+-- evaluar la policy (hallazgo de T2.1, no anticipado en el diseño
+-- original de este documento).
+grant select, insert, update, delete on public.<tabla> to authenticated;
 ```
 
 Reglas no negociables (idénticas a `CLAUDE.md` regla #3, aquí con el detalle técnico):
 
-- **Deny-by-default**: `enable row level security` en la **misma migración** que crea la tabla. Sin policy, RLS deniega todo por defecto — nunca se deja una tabla sin RLS "para después".
+- **Deny-by-default**: `enable row level security` en la **misma migración** que crea la tabla. Sin policy, RLS deniega todo por defecto — nunca se deja una tabla sin RLS "para después". El `grant` de arriba es necesario pero no suficiente: sin las policies, el rol tiene el privilegio pero ninguna fila pasa el filtro.
 - **Prohibido `using (true)`** salvo una lista blanca explícita de tablas de referencia verdaderamente públicas (p. ej. catálogos globales sin dato de negocio). FF-2 la hace cumplir en CI (script que falla si detecta RLS deshabilitado o `using (true)` fuera de la lista blanca).
 - **Índices liderados por `tenant_id`**: todo índice compuesto relevante empieza por `tenant_id` (`create index on <tabla> (tenant_id, <columna>)`), porque toda query ya filtra por tenant primero.
 - **Funciones estables, no reevaluación por fila**: `current_tenant_id()` es `stable`, y dentro de policies se evita volver a llamar `auth.uid()`/`auth.jwt()` sueltos por cada fila — el patrón de arriba ya lo resuelve al envolver la lectura del JWT en una única función estable reutilizada.
@@ -137,6 +144,35 @@ Cubierto en §4: índices liderados por `tenant_id` + `current_tenant_id()` como
 ### 5.5 Restauración por tenant en base compartida
 
 Un PITR (point-in-time recovery) restaura **toda** la base a la vez: no existe hoy un mecanismo para restaurar un solo tenant sin afectar a los demás. Esto es un hueco reconocido, no resuelto aquí — se cierra en `05-05` (Respaldo y recuperación), que debe decidir explícitamente entre (a) exports lógicos por tenant como mecanismo aparte, o (b) aceptar un RTO/RPO distinto y documentado para el escenario "restaurar un solo tenant". Mientras `05-05` no esté Vigente, cualquier incidente que requiera restaurar un tenant individual se trata como incidente de todo el sistema.
+
+### 5.6 Una policy no puede consultar una tabla protegida por RLS "desde adentro" sin ayuda
+
+Hallazgo de T2.1 (validado por los tests de aislamiento, no anticipado en la auditoría original): cuando la `USING`/`WITH CHECK` de una policy sobre la tabla `X` necesita consultar la propia tabla `X` (o otra tabla con RLS) para decidir algo distinto de "una fila mía", esa subconsulta corre **con los privilegios y la RLS del rol que llama** — no con privilegios elevados. Dos síntomas concretos, ambos encontrados al implementar `03-03`:
+
+- **La subconsulta ve menos de lo que la policy necesita.** La policy de `profiles` que permite leer perfiles de compañeros de tenant hacía un `JOIN` contra `memberships`; como `memberships` solo dejaba ver "mis propias membresías", el `JOIN` nunca encontraba la fila del compañero y la policy denegaba siempre.
+- **Postgres rechaza la auto-referencia directamente.** Una policy de `memberships` que consulta `memberships` dentro de su propio `WITH CHECK` (para verificar "¿soy admin de este tenant?") dispara `ERROR: infinite recursion detected in policy for relation "memberships"`.
+
+**Solución (aplicada en `03-03` §2.3/§4):** envolver esa subconsulta en una función `security definer` (`stable`, `set search_path = public`). Al ejecutarse con los privilegios de quien la define (no de quien la invoca), la función ve la tabla sin la restricción de RLS que bloquearía la consulta, y al ser una función separada (no una subconsulta inline sobre la misma relación) Postgres no la trata como auto-referencia recursiva. Patrón general:
+
+```sql
+create or replace function public.<nombre_del_chequeo>(<argumentos>)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.<tabla_protegida> ...
+  )
+$$;
+
+create policy "..."
+  on public.<tabla> for <operacion>
+  using (public.<nombre_del_chequeo>(...));
+```
+
+Regla general para el resto del proyecto: **toda policy cuya condición necesite mirar más allá de "esta fila me pertenece" — cruzar con otra tabla, o consultar la misma tabla desde otro ángulo — se escribe como función `security definer`, nunca como subconsulta inline.** Esto no es un parche puntual de `profiles`/`memberships`; es el patrón a seguir en `03-04` en adelante (p. ej. la FSM de pedidos y las policies de catálogo probablemente lo necesiten).
 
 ## 6. Blast radius y mitigaciones
 
