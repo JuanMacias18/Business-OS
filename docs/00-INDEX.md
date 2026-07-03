@@ -191,7 +191,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | 01-01 | Visión y alcance | Business OS: problema, propuesta de valor, objetivos y no-objetivos, alcance v1 vs plataforma, confirmación de nombre. | PM | — | **Vigente** |
 | 01-02 | Usuarios y JTBD | Personas multi-vertical (dueño PYME, personal/cajero, cliente final, operador de plataforma, revendedor white-label) y jobs-to-be-done. | PM | 01-01 | En cola |
 | 01-03 | Modelo de negocio y pricing | Suscripción SaaS por módulo/vertical/seat; tier white-label/revendedor; unit economics multi-tenant; costo por tenant. | PM | 01-01 | En cola |
-| 01-04 | Glosario | Vocabulario único (tenant, módulo, entitlement, vertical, white-label, region pack, RLS, anticipo, getstatus, WABA…). | TW | — | En cola |
+| 01-04 | Glosario | Vocabulario único (tenant, módulo, entitlement, vertical, white-label, region pack, RLS, anticipo, getstatus, WABA…). | TW | — | En revisión |
 | 01-05 | Verticales y matriz de módulos | Qué módulos son del core y cuáles por vertical; matriz vertical × módulo; criterio para añadir verticales. | PM | 01-01 | En cola |
 
 ### 4.2 Dominio 02 — Requisitos
@@ -332,14 +332,15 @@ Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 
 |---|---|
 | Documentos totales (catálogo) | 35 |
 | Vigentes | 1 (`01-01`) |
+| En revisión | 1 (`01-04`, pendiente de aprobación del owner) |
 | En redacción | 1 (`08-03`) |
-| En cola | 33 |
+| En cola | 32 |
 | ADR totales | 12 |
 | ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
 | ADR Propuestos | 0 |
-| Próximo documento a redactar | `01-04-glosario.md` (orden DMV, §1.1 — no el orden del catálogo completo) |
+| Próximo documento a redactar | `03-02-tenancy-y-aislamiento.md` (orden DMV, §1.1 — no el orden del catálogo completo) |
 | Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---
 
-*Fin del índice maestro v2.1.0. Siguiente artefacto según el orden de la Documentación Mínima Viable (§1.1): `01-04-glosario.md`.*
+*Fin del índice maestro v2.1.0. Siguiente artefacto según el orden de la Documentación Mínima Viable (§1.1): `03-02-tenancy-y-aislamiento.md`.*
