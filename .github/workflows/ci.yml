@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build:
+    name: lint + typecheck + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  ff3-service-role-grep:
+    name: "FF-3: service_role fuera de apps/ y packages/"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: grep service_role
+        run: |
+          if grep -rn "service_role" --include="*.ts" --include="*.tsx" apps packages 2>/dev/null; then
+            echo "::error::service_role encontrado en apps/ o packages/ — debe vivir solo en supabase/functions/"
+            exit 1
+          fi
+          echo "OK: sin service_role fuera de supabase/functions/"
+
+  supabase-db-test:
+    name: supabase test db (pgTAP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: supabase start
+      - run: supabase test db
+      - if: always()
+        run: supabase stop --no-backup

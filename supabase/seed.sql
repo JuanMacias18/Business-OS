@@ -1,0 +1,1 @@
+-- Seed de desarrollo local. Vacío por ahora; el seed de catálogo demo llega en Fase 3.
