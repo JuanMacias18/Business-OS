@@ -258,7 +258,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 
 | ID | Documento | Propósito | Rol | Depende de | Estado |
 |---|---|---|---|---|---|
-| 06-01 | Estrategia de pruebas | Pirámide; **pruebas de aislamiento multi-tenant como categoría de primera clase**; contract tests de webhooks; idempotencia/concurrencia de stock; sandbox de pasarelas/Meta. | QA | 02-03, 03-02, 03-05, 03-06 | En cola |
+| 06-01 | Estrategia de pruebas | Pirámide; **pruebas de aislamiento multi-tenant como categoría de primera clase**; contract tests de webhooks; idempotencia/concurrencia de stock; sandbox de pasarelas/Meta. **v0.1 (En revisión) cubre solo la sección de aislamiento** — el resto se añade just-in-time en Fases 4-6. | QA | 03-02, 03-03 | En revisión |
 | 06-02 | Definición de Hecho y release | DoD (incluye verificación de RLS), checklist de release, versiones, changelog. | QA | 06-01, 05-03 | En cola |
 
 ### 4.8 Dominio 07 — Entrega y planificación
@@ -332,15 +332,15 @@ Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 
 |---|---|
 | Documentos totales (catálogo) | 35 |
 | Vigentes | 1 (`01-01`) |
-| En revisión | 3 (`01-04`, `03-02`, `03-03` v0.1 núcleo — pendientes de aprobación del owner) |
+| En revisión | 4 (`01-04`, `03-02`, `03-03` v0.1 núcleo, `06-01` v0.1 aislamiento — pendientes de aprobación del owner) |
 | En redacción | 1 (`08-03`) |
-| En cola | 30 |
+| En cola | 29 |
 | ADR totales | 12 |
 | ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
 | ADR Propuestos | 0 |
-| Próximo documento a redactar | `06-01-estrategia-de-pruebas.md` (solo sección de aislamiento — orden DMV, §1.1) |
+| Próximo documento a redactar | Ninguno pendiente de DMV — con `06-01` v0.1 se completa la Documentación Mínima Viable (§1.1). Siguiente paso: T2.1 (código, walking skeleton). El resto del catálogo se redacta just-in-time por fase (§9). |
 | Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---
 
-*Fin del índice maestro v2.1.0. Siguiente artefacto según el orden de la Documentación Mínima Viable (§1.1): `06-01-estrategia-de-pruebas.md` (solo sección de aislamiento).*
+*Fin del índice maestro v2.1.0. Documentación Mínima Viable completa (`01-04`, `03-02`, `03-03` núcleo, `06-01` aislamiento — las 4 en estado En revisión, pendientes de aprobación del owner). Siguiente artefacto: código de T2.1 (walking skeleton), no un documento.*
