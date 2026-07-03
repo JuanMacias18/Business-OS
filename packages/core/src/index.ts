@@ -1,4 +1,6 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
+
+export type { Session, SupabaseClient };
 
 /**
  * Cliente Supabase tipado para uso en apps/ (panel).

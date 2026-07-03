@@ -45,11 +45,10 @@ No construir el nivel dedicado hoy es una decisión deliberada, no una omisión 
 
 PostgREST (la capa que expone Postgres vía la API de Supabase) es *stateless* por request: no hay forma de "elegir tenant" a mitad de una consulta salvo que el dato ya venga en el JWT. Por eso:
 
-1. Al emitir el token (login, o refresh), un **Custom Access Token Hook** de Supabase Auth (función Postgres registrada en la configuración de Auth) agrega el `tenant_id` de la membership del usuario como claim en `app_metadata` del JWT.
-   *(Nota de implementación para T2.1: verificar la firma exacta del hook contra la versión vigente de Supabase Auth al codificarlo — esta API evoluciona.)*
+1. Al emitir el token (login, o refresh), un **Custom Access Token Hook** de Supabase Auth (función Postgres registrada en `[auth.hook.custom_access_token]`, `supabase/config.toml`) agrega el `tenant_id` de la membership del usuario como claim en `app_metadata` del JWT. Implementado y confirmado en T2.3 (`custom_access_token_hook(event jsonb) returns jsonb`, ver `03-03`): **debe ser `security definer`** — GoTrue lo invoca como `supabase_auth_admin`, un rol sin GRANT sobre `memberships` y sin JWT de usuario en contexto (`auth.uid()` sería `null` y la RLS de `memberships` denegaría todo), mismo patrón de §5.6.
 2. Toda policy de RLS lee ese claim mediante una función estable, nunca vía JOIN contra `memberships` en cada fila (ver rendimiento, §4).
-3. El **panel**, tras login, sí consulta sus propias `memberships` (protegidas por RLS: "el usuario ve sus propias membresías") para decidir/mostrar en qué tenant está operando — pero esa consulta es para la UI, no la fuente de verdad que hace cumplir el aislamiento. La fuente de verdad es siempre el claim del JWT usado en cada request subsecuente.
-4. Si un usuario pertenece a más de un tenant (caso futuro), "cambiar de tenant" implica volver a emitir el token con el claim actualizado — no algo que v1 necesite resolver todavía.
+3. El **panel**, tras login, consulta directamente `tenants` (protegida por RLS, que ya filtra usando el claim del JWT) para mostrar los datos del tenant activo — en v1 no hace falta que el panel consulte `memberships` para "decidir" el tenant, porque un usuario opera exactamente uno (punto 4). La fuente de verdad que hace cumplir el aislamiento sigue siendo siempre el claim del JWT, nunca una decisión del cliente.
+4. Si un usuario pertenece a más de un tenant (caso futuro), "cambiar de tenant" implica volver a emitir el token con el claim actualizado — no algo que v1 necesite resolver todavía. El hook toma hoy la membership más antigua (`order by created_at asc limit 1`) de forma determinística si existiera más de una.
 
 ```mermaid
 sequenceDiagram

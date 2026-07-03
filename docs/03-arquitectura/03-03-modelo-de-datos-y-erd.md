@@ -237,6 +237,26 @@ Los `insert` de `event_log` los hacen las Edge Functions y funciones de dominio 
 - `timestamptz not null default now()` para toda columna de auditoría temporal.
 - `snake_case` para tablas y columnas; inglés técnico para identificadores (`01-01` convención de idioma, `08-01` la formalizará para código).
 
+## 5.1 `jobs` (añadida en T2.2 — cola de procesamiento asíncrono, transversal al núcleo)
+
+Cola para el patrón webhook-rápido (`CLAUDE.md` regla #5): todo webhook encola aquí el efecto de forma idempotente (`unique (tenant_id, idempotency_key)`) en vez de procesarlo de forma síncrona. No es específica de un módulo vertical — la usan Pedidos/Pagos (Fase 4-5) y WhatsApp (Fase 6) por igual, por eso vive en el núcleo y no se difiere como el resto de `03-03` §1.
+
+```sql
+create table public.jobs (
+  id              uuid primary key default gen_random_uuid(),
+  tenant_id       uuid not null references public.tenants(id) on delete cascade,
+  idempotency_key text not null,
+  job_type        text not null,
+  payload         jsonb not null default '{}'::jsonb,
+  status          text not null default 'pending' check (status in ('pending', 'done', 'failed')),
+  created_at      timestamptz not null default now(),
+  processed_at    timestamptz,
+  unique (tenant_id, idempotency_key)
+);
+```
+
+RLS: solo lectura para miembros de su tenant (mismo patrón que `event_log`); el insert real lo hace el handler del webhook con `service_role`. `process_pending_jobs()` es la "función de proceso" separada del handler — ver `supabase/migrations/20260703140325_jobs_queue.sql` para el detalle completo (SQL, policies, índices).
+
 ## 6. Pruebas de aislamiento requeridas
 
 Cada tabla de esta versión necesita, como mínimo, los 4 casos de `03-02` §8 (tenant A no lee/escribe B; sin membership no lee nada; staff vs. admin) antes de mergear la migración que la crea — FF-1 en CI.

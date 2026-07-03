@@ -84,3 +84,39 @@ jobs:
 
       - if: always()
         run: supabase stop --no-backup
+
+  e2e-panel:
+    name: "e2e panel (aislamiento de tenant, Playwright)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: supabase start
+
+      - name: Generar apps/panel/.env.local con credenciales del stack local
+        run: |
+          status=$(supabase status -o json)
+          url=$(echo "$status" | jq -r .API_URL)
+          anon_key=$(echo "$status" | jq -r .ANON_KEY)
+          echo "VITE_SUPABASE_URL=$url" > apps/panel/.env.local
+          echo "VITE_SUPABASE_ANON_KEY=$anon_key" >> apps/panel/.env.local
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: pnpm e2e
+
+      - if: always()
+        run: supabase stop --no-backup
