@@ -207,7 +207,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | ID | Documento | Propósito | Rol | Depende de | Estado |
 |---|---|---|---|---|---|
 | 03-01 | Visión de arquitectura (C4) | C4 (contexto/contenedores/componentes) de la plataforma modular multi-tenant; principios; estilo edge-first con event-log. | CTO | 02-02 | En cola |
-| 03-02 | Tenancy y aislamiento | Multi-tenant: shared-schema + RLS por defecto; aislamiento por niveles (esquema/DB dedicado para enterprise); resolución de tenant; blast radius. | CTO | 03-01, ADR-002 | En cola |
+| 03-02 | Tenancy y aislamiento | Multi-tenant: shared-schema + RLS por defecto; aislamiento por niveles (esquema/DB dedicado para enterprise); resolución de tenant; blast radius. | CTO | ADR-002, ADR-007, 01-04 | En revisión |
 | 03-03 | Modelo de datos y ERD | Esquema multi-tenant (tenant_id, RLS), entidades del core (tenants, usuarios, roles, productos, inventario, pedidos, items, pagos, mensajes, event_log) y límites por módulo; ERD. | CTO | 03-01, 03-04 | En cola |
 | 03-04 | Sistema de módulos y entitlements | Registro de módulos, activación por tenant/vertical, feature flags, límites de acoplamiento entre módulos, extensibilidad. **(Pilar nuevo.)** | CTO | 03-01, ADR-008, 01-05 | En cola |
 | 03-05 | Máquina de estados del pedido | FSM del módulo Pedidos (v1 restaurantes): estados, transiciones, reserva de stock, expiraciones, reversas, idempotencia. | CTO | 03-03, ADR-006 | En cola |
@@ -332,15 +332,15 @@ Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 
 |---|---|
 | Documentos totales (catálogo) | 35 |
 | Vigentes | 1 (`01-01`) |
-| En revisión | 1 (`01-04`, pendiente de aprobación del owner) |
+| En revisión | 2 (`01-04`, `03-02` — pendientes de aprobación del owner) |
 | En redacción | 1 (`08-03`) |
-| En cola | 32 |
+| En cola | 31 |
 | ADR totales | 12 |
 | ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
 | ADR Propuestos | 0 |
-| Próximo documento a redactar | `03-02-tenancy-y-aislamiento.md` (orden DMV, §1.1 — no el orden del catálogo completo) |
+| Próximo documento a redactar | `03-03-modelo-de-datos-y-erd.md` (solo núcleo — orden DMV, §1.1) |
 | Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---
 
-*Fin del índice maestro v2.1.0. Siguiente artefacto según el orden de la Documentación Mínima Viable (§1.1): `03-02-tenancy-y-aislamiento.md`.*
+*Fin del índice maestro v2.1.0. Siguiente artefacto según el orden de la Documentación Mínima Viable (§1.1): `03-03-modelo-de-datos-y-erd.md` (solo núcleo).*
