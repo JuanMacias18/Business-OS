@@ -98,11 +98,11 @@ create policy "aislamiento por tenant"
   with check (tenant_id = public.current_tenant_id());
 
 -- RLS restringe FILAS, pero Postgres exige ademas el privilegio de
--- tabla de base para el rol; sin este GRANT, toda query del rol
--- authenticated falla con "permission denied" antes de llegar a
--- evaluar la policy (hallazgo de T2.1, no anticipado en el diseño
--- original de este documento).
-grant select, insert, update, delete on public.<tabla> to authenticated;
+-- tabla de base para el rol; sin este GRANT, toda query falla con
+-- "permission denied" antes de llegar a evaluar la policy (hallazgo
+-- de T2.1). service_role tambien lo necesita: bypassa RLS, pero NO
+-- el GRANT (hallazgo de T2.2, al conectar el primer webhook real).
+grant select, insert, update, delete on public.<tabla> to authenticated, service_role;
 ```
 
 Reglas no negociables (idénticas a `CLAUDE.md` regla #3, aquí con el detalle técnico):

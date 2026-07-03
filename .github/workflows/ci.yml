@@ -52,3 +52,35 @@ jobs:
       - run: supabase test db
       - if: always()
         run: supabase stop --no-backup
+
+  deno-functions-test:
+    name: "deno test (Edge Functions, incl. FF-4 replay)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: supabase start
+
+      - name: Exportar credenciales del stack local
+        id: creds
+        run: |
+          status=$(supabase status -o json)
+          echo "url=$(echo "$status" | jq -r .API_URL)" >> "$GITHUB_OUTPUT"
+          echo "service_role_key=$(echo "$status" | jq -r .SERVICE_ROLE_KEY)" >> "$GITHUB_OUTPUT"
+
+      - name: deno test
+        env:
+          SUPABASE_URL: ${{ steps.creds.outputs.url }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.creds.outputs.service_role_key }}
+        run: deno test --config supabase/functions/deno.json --allow-net --allow-env supabase/functions
+
+      - if: always()
+        run: supabase stop --no-backup
