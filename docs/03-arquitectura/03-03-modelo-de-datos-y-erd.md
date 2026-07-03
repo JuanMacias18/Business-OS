@@ -4,11 +4,11 @@
 |---|---|
 | Documento | Modelo de datos y ERD — núcleo |
 | Estado | **Vigente** |
-| Versión | 1.0.0 (alcance: solo núcleo; se amplía en fases posteriores, ver §7) |
-| Última actualización | 2026-07-02 |
+| Versión | 1.1.0 (núcleo + catálogo/`jobs`; el resto se amplía en fases posteriores, ver §7) |
+| Última actualización | 2026-07-03 |
 | Responsable | CTO |
 | Depende de | `03-02` (mecanismo de RLS y `current_tenant_id()`), `01-04` (glosario) |
-| Es dependencia de | `03-04`, `03-05`, `04-01`, `06-01`, y la tarea T2.1 del plan de entrega |
+| Es dependencia de | `03-04`, `03-05`, `04-01`, `06-01`, y las tareas T2.1/T2.2/T3.1 del plan de entrega |
 
 ---
 
@@ -257,13 +257,34 @@ create table public.jobs (
 
 RLS: solo lectura para miembros de su tenant (mismo patrón que `event_log`); el insert real lo hace el handler del webhook con `service_role`. `process_pending_jobs()` es la "función de proceso" separada del handler — ver `supabase/migrations/20260703140325_jobs_queue.sql` para el detalle completo (SQL, policies, índices).
 
+## 5.2 `productos` (añadida en T3.1, Fase 3 — catálogo)
+
+Sin categorías anidadas ni variantes (`01-01` §6.2). `stock` es inventario básico (una cantidad simple); la reserva/descuento atómico bajo concurrencia es un mecanismo del módulo Pedidos, Fase 4 (`ADR-006`) — aquí solo se guarda la cantidad.
+
+```sql
+create table public.productos (
+  id           uuid primary key default gen_random_uuid(),
+  tenant_id    uuid not null references public.tenants(id) on delete cascade,
+  nombre       text not null,
+  precio       numeric(12,2) not null default 0,
+  stock        integer not null default 0,
+  disponible   boolean not null default true,
+  imagen_path  text,
+  created_at   timestamptz not null default now()
+);
+```
+
+RLS (rol, `03-02` §7): **cualquier miembro** (admin o staff) lee el catálogo — el staff lo necesita para tomar pedidos en Fase 4; **solo admin** inserta, edita o borra productos, reutilizando `is_tenant_admin()` (`03-02` §5.6). Ver `supabase/migrations/20260703151034_catalogo.sql` para el SQL completo.
+
+**Storage — imágenes de producto:** bucket `product-images` (privado), convención de path `{tenant_id}/{archivo}` (`03-02` §5.2). Policies: cualquier miembro lee, solo admin sube/edita/borra — mismo criterio de rol que la tabla. Verificado con subida y lectura reales vía la API de Storage (no solo a nivel de policy): admin de un tenant no puede subir bajo el prefijo de otro, ni leer imágenes ajenas.
+
 ## 6. Pruebas de aislamiento requeridas
 
 Cada tabla de esta versión necesita, como mínimo, los 4 casos de `03-02` §8 (tenant A no lee/escribe B; sin membership no lee nada; staff vs. admin) antes de mergear la migración que la crea — FF-1 en CI.
 
 ## 7. No-objetivos de esta versión
 
-- No incluye catálogo, inventario, pedidos, pagos ni mensajería (ver tabla de §1 — llegan just-in-time por fase).
+- No incluye pedidos, pagos ni mensajería (ver tabla de §1 — llegan just-in-time por fase). Catálogo (`productos`) e inventario básico (`stock`) ya están cubiertos en §5.2 desde T3.1.
 - No define el flujo de onboarding completo de un tenant nuevo (eso es `05-02`; aquí solo se reconoce que la primera membership la crea ese flujo con `service_role`).
 - No define permisos granulares más allá de `admin`/`staff` (si hiciera falta un tercer rol, es una decisión de producto para `02-01`, no de este documento).
 
