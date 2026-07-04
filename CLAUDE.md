@@ -27,10 +27,11 @@ docs/              # documentación (docs-as-code)
 pnpm dev             # panel local
 pnpm db:reset        # supabase db reset (migraciones + seed)
 supabase test db     # suite pgTAP (incluye aislamiento — FF-1)
-deno test --config supabase/functions/deno.json --allow-net --allow-env supabase/functions
-                     # tests de Edge Functions (incluye replay — FF-4). El test de
-                     # replay requiere SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY del
-                     # stack local (`supabase status`); sin ellas, se salta solo.
+deno test --config supabase/functions/deno.json --allow-net --allow-env supabase/functions supabase/tests/concurrency
+                     # tests de Edge Functions (incluye replay — FF-4) + tests de
+                     # concurrencia (LOOP B, ver 03-05). Requieren SUPABASE_URL/
+                     # SUPABASE_SERVICE_ROLE_KEY/SUPABASE_ANON_KEY del stack local
+                     # (`supabase status`); sin ellas, se saltan solos.
 pnpm lint && pnpm typecheck && pnpm test
 pnpm e2e             # Playwright
 ```

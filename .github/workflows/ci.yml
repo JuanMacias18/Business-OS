@@ -54,7 +54,7 @@ jobs:
         run: supabase stop --no-backup
 
   deno-functions-test:
-    name: "deno test (Edge Functions, incl. FF-4 replay)"
+    name: "deno test (Edge Functions + concurrencia, incl. FF-4 replay y LOOP B)"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -75,12 +75,14 @@ jobs:
           status=$(supabase status -o json)
           echo "url=$(echo "$status" | jq -r .API_URL)" >> "$GITHUB_OUTPUT"
           echo "service_role_key=$(echo "$status" | jq -r .SERVICE_ROLE_KEY)" >> "$GITHUB_OUTPUT"
+          echo "anon_key=$(echo "$status" | jq -r .ANON_KEY)" >> "$GITHUB_OUTPUT"
 
       - name: deno test
         env:
           SUPABASE_URL: ${{ steps.creds.outputs.url }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ steps.creds.outputs.service_role_key }}
-        run: deno test --config supabase/functions/deno.json --allow-net --allow-env supabase/functions
+          SUPABASE_ANON_KEY: ${{ steps.creds.outputs.anon_key }}
+        run: deno test --config supabase/functions/deno.json --allow-net --allow-env supabase/functions supabase/tests/concurrency
 
       - if: always()
         run: supabase stop --no-backup
