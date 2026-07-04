@@ -9,11 +9,13 @@
 | Metadato | Valor |
 |---|---|
 | Estado del índice | **Vigente** |
-| Versión | 2.1.1 |
-| Última actualización | 2026-07-03 |
+| Versión | 2.1.3 |
+| Última actualización | 2026-07-04 |
 | Cambio v1→v2 | Pivote de "SaaS de un vertical, instancia aislada por cliente" a "Business OS multi-tenant, modular y white-label". |
 | Cambio v2.0.0→v2.1.0 | Correcciones de auditoría 2026-07-02 (parches PA-1..PA-12) tras sesión de decisiones T0.1: ADR-001/002/003/008/009/010/011/012 pasan a Aceptado; D-1, D-2, D-4, D-6, D-8 cerradas; D-3 con disparador definido; DMV añadida (§1.1); métricas de §8 recalculadas. |
 | Cambio v2.1.0→v2.1.1 | D-7 cerrada (2026-07-03): gana Wompi, sandbox verificado funcional (spike T0.5); nota añadida a ADR-003. |
+| Cambio v2.1.1→v2.1.2 | `03-08` pasa a En redacción (2026-07-04, inicio de Fase 6): contrato de webhook + FSM conversacional diseñados, sin WABA real todavía (T0.5 sigue en curso). |
+| Cambio v2.1.2→v2.1.3 | `03-08` pasa a En revisión (2026-07-04): T6.1 de laboratorio implementado y probado (migración `whatsapp_conversations`/`whatsapp_numbers` + RLS, Edge Function `whatsapp-webhook`, FSM conversacional, adaptador simulado, FF-1/FF-4 verdes) — pendiente solo el adaptador real de Meta y el GATE completo cuando exista WABA. |
 | Responsable | CTO / Arquitecto |
 | Idioma del repo | Español (es-CO) |
 
@@ -214,7 +216,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | 03-05 | Máquina de estados del pedido | FSM del módulo Pedidos (v1 restaurantes): estados, transiciones, reserva de stock, expiraciones, reversas, idempotencia. | CTO | 03-03, ADR-006 | En revisión |
 | 03-06 | Contrato de API y Edge Functions | Endpoints internos y Edge Functions (webhooks pago/WhatsApp, envío de mensajes, API del panel): contratos, validación de firma, idempotencia, contexto de tenant. | CTO | 03-03, 03-04 | En cola |
 | 03-07 | Capa de pagos multi-pasarela | Abstracción de pasarelas (Nequi, Wompi, Mercado Pago, PayU, ePayco); sin agregador, fondos directos al tenant; credenciales por tenant cifradas; getstatus como verdad. **Wompi implementado y verificado en T5.1** (fixtures reales, GATE de Fase 5 verde 2 veces). | CTO | 03-05, ADR-003 | En revisión |
-| 03-08 | Integración WhatsApp | Recepción/envío, plantillas, tokens, quality rating, versionado; **decisión de onboarding a escala reabierta** (Meta directo vs BSP/Embedded Signup). | CTO | 03-06, ADR-001 | En cola |
+| 03-08 | Integración WhatsApp | Recepción/envío, plantillas, tokens, quality rating, versionado; **decisión de onboarding a escala reabierta** (Meta directo vs BSP/Embedded Signup). **v0.1 (En revisión) cubre T6.1 de laboratorio: webhook + FSM conversacional + estado de conversación, implementado y probado con adaptador simulado — sin WABA real todavía (T0.5 en curso).** | CTO | 03-06, ADR-001 | En revisión |
 | 03-09 | White-label y theming | Branding por tenant (logo, colores, tokens de tema), dominios/subdominios personalizados, límites de personalización. **(Nuevo.)** | CTO | 03-01, ADR-009 | En cola |
 | 03-10 | Configuración regional e i18n | Region packs: pasarelas, impuestos, protección de datos, locale/moneda; cómo se añade una región sin tocar el core. **(Nuevo.)** | CTO | 03-07, ADR-010 | En cola |
 | 03-11 | Registro de decisiones (ADR) | Carpeta e índice de ADR. Ver 4.4. | CTO | — | En cola |
@@ -333,13 +335,13 @@ Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 
 |---|---|
 | Documentos totales (catálogo) | 35 |
 | Vigentes | 5 (`01-01`, `01-04`, `03-02` v1.2, `03-03` v1.2 núcleo+catálogo+pedidos, `06-01` v1.0 aislamiento) |
-| En revisión | 3 (`02-01` v0.2 RF catálogo+pedidos, `03-05` FSM del pedido, `03-07` capa de pagos — pendientes de aprobación del owner) |
+| En revisión | 4 (`02-01` v0.2 RF catálogo+pedidos, `03-05` FSM del pedido, `03-07` capa de pagos, `03-08` v0.1 integración WhatsApp (T6.1 laboratorio) — pendientes de aprobación del owner) |
 | En redacción | 1 (`08-03`) |
-| En cola | 26 |
+| En cola | 25 |
 | ADR totales | 12 |
 | ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
 | ADR Propuestos | 0 |
-| Próximo documento a redactar | Ninguno pendiente de DMV. Fases 3, 4 y 5 ya redactaron sus docs just-in-time (`03-03` v1.2, `03-05`, `03-07`, `02-01` v0.2). El resto del catálogo se redacta just-in-time por fase (§9). |
+| Próximo documento a redactar | Ninguno pendiente de DMV. Fases 3, 4, 5 y 6 (laboratorio) ya redactaron sus docs just-in-time (`03-03` v1.2, `03-05`, `03-07`, `03-08`, `02-01` v0.2). El resto del catálogo se redacta just-in-time por fase (§9). |
 | Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---

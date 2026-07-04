@@ -9,6 +9,13 @@ export type {
   TransactionStatus,
   WebhookEvent,
 } from "./payment-gateway";
+export type {
+  WhatsAppSender,
+  WhatsAppCredentials,
+  OutgoingMessage,
+  IncomingMessage,
+  SendResult,
+} from "./whatsapp-sender";
 
 /**
  * Cliente Supabase tipado para uso en apps/ (panel).
