@@ -9,10 +9,11 @@
 | Metadato | Valor |
 |---|---|
 | Estado del índice | **Vigente** |
-| Versión | 2.1.0 |
-| Última actualización | 2026-07-02 |
+| Versión | 2.1.1 |
+| Última actualización | 2026-07-03 |
 | Cambio v1→v2 | Pivote de "SaaS de un vertical, instancia aislada por cliente" a "Business OS multi-tenant, modular y white-label". |
 | Cambio v2.0.0→v2.1.0 | Correcciones de auditoría 2026-07-02 (parches PA-1..PA-12) tras sesión de decisiones T0.1: ADR-001/002/003/008/009/010/011/012 pasan a Aceptado; D-1, D-2, D-4, D-6, D-8 cerradas; D-3 con disparador definido; DMV añadida (§1.1); métricas de §8 recalculadas. |
+| Cambio v2.1.0→v2.1.1 | D-7 cerrada (2026-07-03): gana Wompi, sandbox verificado funcional (spike T0.5); nota añadida a ADR-003. |
 | Responsable | CTO / Arquitecto |
 | Idioma del repo | Español (es-CO) |
 
@@ -224,7 +225,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 |---|---|---|---|
 | ADR-001 | WhatsApp: Meta Cloud API directo | Integración directa con Graph API. Candidato a supersede vía D-3. Disparador: el onboarding manual de WABA supere ≈15-20 tenants activos, o el tiempo de alta por tenant no baje pese al runbook (07-01/T7.1). | Aceptado |
 | ADR-002 | Arquitectura multi-tenant con RLS | Postgres compartido con `tenant_id` + RLS como aislamiento por defecto; esquema/DB dedicado para tiers enterprise. **Reemplaza** la decisión v1 de instancia aislada por cliente. v1 implementa exclusivamente shared-schema + RLS; el aislamiento dedicado es una costura sin código hasta demanda enterprise real. | Aceptado |
-| ADR-003 | Pagos multi-pasarela, sin agregador | Abstracción de pasarelas; cada tenant usa sus credenciales y recibe fondos directo; la plataforma nunca custodia dinero. | Aceptado |
+| ADR-003 | Pagos multi-pasarela, sin agregador | Abstracción de pasarelas; cada tenant usa sus credenciales y recibe fondos directo; la plataforma nunca custodia dinero. **Primera pasarela de v1 (D-7): Wompi** — sandbox verificado funcional el 2026-07-03 (llave pública y privada autentican contra la API real; acepta NEQUI, PSE, CARD, DAVIPLATA, Bancolombia en modo sandbox). Nequi API directa seguía en revisión al momento de decidir; gana Wompi por la regla "la primera con sandbox funcional" (`AUDITORIA-business-os.md` C6). La abstracción multi-pasarela sigue permitiendo agregar Nequi directa después sin reescribir. | Aceptado |
 | ADR-004 | n8n fuera de la ruta crítica | La ruta pedido→pago→inventario va en Edge Functions; n8n solo para automatizaciones adyacentes. | Aceptado |
 | ADR-005 | Edge Functions como webhook | Supabase Edge Functions como endpoint HTTPS de pasarelas y Meta. | Aceptado |
 | ADR-006 | Reserva de stock en la solicitud de pago | Stock reservado al generar la solicitud, no al confirmar; expiración libera la reserva. | Aceptado |
@@ -319,7 +320,7 @@ Las decisiones cerradas se conservan en esta tabla por trazabilidad (referencian
 | D-4 | **Estrategia de aislamiento** por defecto y tiers | 03-02 | **Cerrada.** ADR-002 → Aceptado: shared-schema + `tenant_id` + RLS por defecto; esquema/DB dedicado = costura sin código, solo para tiers enterprise futuros (nota C7). |
 | D-5 | **Modelo de pricing** de suscripción (por módulo/vertical/seat) y tier white-label/revendedor | 01-03 | **Abierta.** Se define con costos reales en Fase 7 (`01-03`); no bloquea Fase 0. |
 | D-6 | **Módulos del core** y primeros módulos verticales de restaurantes | 01-05 / 02-01 | **Cerrada (T0.1).** Flujo: para-llevar/domicilio; dine-in diferido (01-01 §6.2). Módulos v1: identidad/tenancy, catálogo, pedidos, pagos, inventario, notificaciones WhatsApp, panel — y nada más. |
-| D-7 | Primera pasarela de v1: Nequi API directa vs. pasarela con Nequi como método de pago | ADR-003 / 03-07 | **Abierta, por diseño.** Se decide con el spike de sandbox de T0.5 (semana 1); gana la que dé sandbox funcional primero. Verificar condiciones vigentes (comisiones, tiempos de dispersión) antes de fijarlo en el ADR. |
+| D-7 | Primera pasarela de v1: Nequi API directa vs. pasarela con Nequi como método de pago | ADR-003 / 03-07 | **Cerrada (2026-07-03).** Gana **Wompi**: sandbox funcional verificado (llaves pública/privada autentican, NEQUI disponible como método dentro de Wompi). Nequi API directa seguía en revisión — regla "la primera que responde con sandbox funcional gana" (`AUDITORIA-business-os.md` C6). Comisión de referencia: 2.65% + $700 COP + IVA (tarjeta, plan agregador); verificar de nuevo antes de cobrar en producción, las tarifas cambian. |
 | D-8 | Estructura de repositorios | ADR-012 / 05-03 | **Cerrada (T0.1).** Monorepo pnpm (`apps/panel`, `packages/core`, `supabase/`, `docs/`). |
 
 ---
