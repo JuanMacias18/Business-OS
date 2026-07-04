@@ -4,11 +4,11 @@
 |---|---|
 | Documento | Modelo de datos y ERD — núcleo |
 | Estado | **Vigente** |
-| Versión | 1.1.0 (núcleo + catálogo/`jobs`; el resto se amplía en fases posteriores, ver §7) |
+| Versión | 1.2.0 (núcleo + catálogo/`jobs` + pedidos; pagos/mensajería se amplían en fases posteriores, ver §7) |
 | Última actualización | 2026-07-03 |
 | Responsable | CTO |
-| Depende de | `03-02` (mecanismo de RLS y `current_tenant_id()`), `01-04` (glosario) |
-| Es dependencia de | `03-04`, `03-05`, `04-01`, `06-01`, y las tareas T2.1/T2.2/T3.1 del plan de entrega |
+| Depende de | `03-02` (mecanismo de RLS y `current_tenant_id()`), `03-05` (FSM del pedido), `01-04` (glosario) |
+| Es dependencia de | `03-04`, `04-01`, `06-01`, y las tareas T2.1/T2.2/T3.1/T4.1 del plan de entrega |
 
 ---
 
@@ -255,7 +255,21 @@ create table public.jobs (
 );
 ```
 
-RLS: solo lectura para miembros de su tenant (mismo patrón que `event_log`); el insert real lo hace el handler del webhook con `service_role`. `process_pending_jobs()` es la "función de proceso" separada del handler — ver `supabase/migrations/20260703140325_jobs_queue.sql` para el detalle completo (SQL, policies, índices).
+RLS: solo lectura para miembros de su tenant (mismo patrón que `event_log`); el insert real lo hace el handler del webhook con `service_role`. `process_pending_jobs()` es la "función de proceso" separada del handler, con `EXECUTE` revocado a `public`/`anon`/`authenticated` (corregido en T4.1 — ver `03-02` §5.7, hallazgo retroactivo: toda función nueva es ejecutable por `PUBLIC` hasta que se revoca) — ver `supabase/migrations/20260703140325_jobs_queue.sql` para el detalle completo (SQL, policies, índices).
+
+## 5.3 `orders`, `order_items`, `stock_reservations` (añadidas en T4.1 — FSM del pedido, Fase 4)
+
+Esquema completo, trigger de validación de transiciones y funciones `solicitar_pago()`/`confirmar_pago()`/`cancelar_pedido()`/`avanzar_pedido()`/`expirar_reservas_vencidas()` en `supabase/migrations/20260704021628_pedidos_fsm.sql`. El contrato completo de la FSM (estados, transiciones válidas, mecanismo de reserva/liberación de stock) vive en `03-05` — este documento no lo repite, solo registra que las tres tablas existen y su relación:
+
+```mermaid
+erDiagram
+    orders ||--o{ order_items : "contiene"
+    orders ||--o{ stock_reservations : "reserva stock via"
+    productos ||--o{ order_items : "referenciado por"
+    productos ||--o{ stock_reservations : "reservado de"
+```
+
+RLS (`03-05` §6): a diferencia del catálogo, **cualquier miembro** (admin o staff) crea y opera pedidos — no hay restricción de rol. No existe policy de `UPDATE` para `authenticated` en `orders`: todo cambio de estado pasa por las funciones `security definer` de arriba (que filtran `tenant_id = current_tenant_id()` explícitamente, ver `03-02` §5.6), nunca por un `UPDATE` directo del cliente — una capa más de defensa además del trigger de validación de transiciones.
 
 ## 5.2 `productos` (añadida en T3.1, Fase 3 — catálogo)
 
@@ -284,7 +298,7 @@ Cada tabla de esta versión necesita, como mínimo, los 4 casos de `03-02` §8 (
 
 ## 7. No-objetivos de esta versión
 
-- No incluye pedidos, pagos ni mensajería (ver tabla de §1 — llegan just-in-time por fase). Catálogo (`productos`) e inventario básico (`stock`) ya están cubiertos en §5.2 desde T3.1.
+- No incluye pagos ni mensajería (ver tabla de §1 — llegan just-in-time por fase). Catálogo (`productos`) e inventario básico (`stock`) cubiertos en §5.2 desde T3.1; pedidos (`orders`/`order_items`/`stock_reservations`) cubiertos en §5.3 desde T4.1 — el contrato completo de su FSM vive en `03-05`, no aquí.
 - No define el flujo de onboarding completo de un tenant nuevo (eso es `05-02`; aquí solo se reconoce que la primera membership la crea ese flujo con `service_role`).
 - No define permisos granulares más allá de `admin`/`staff` (si hiciera falta un tercer rol, es una decisión de producto para `02-01`, no de este documento).
 

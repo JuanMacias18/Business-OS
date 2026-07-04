@@ -5,6 +5,8 @@ async function login(page: import("@playwright/test").Page, email: string, passw
   await page.getByTestId("email-input").fill(email);
   await page.getByTestId("password-input").fill(password);
   await page.getByTestId("login-button").click();
+  await expect(page.getByTestId("tenant-dashboard")).toBeVisible();
+  await page.getByTestId("tab-catalogo").click();
   await expect(page.getByTestId("catalog-manager")).toBeVisible();
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { CatalogManager } from "./CatalogManager";
+import { OrdersManager } from "./OrdersManager";
 
 interface Tenant {
   id: string;
@@ -11,6 +12,7 @@ export function TenantDashboard() {
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<"catalogo" | "pedidos">("pedidos");
 
   useEffect(() => {
     async function load() {
@@ -52,7 +54,34 @@ export function TenantDashboard() {
           Salir
         </button>
       </div>
-      {tenant && <CatalogManager tenantId={tenant.id} isAdmin={isAdmin} />}
+
+      {tenant && (
+        <>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              data-testid="tab-pedidos"
+              onClick={() => setTab("pedidos")}
+              className={`rounded px-3 py-1 text-sm ${tab === "pedidos" ? "bg-slate-100 text-slate-950" : "border border-slate-700"}`}
+            >
+              Pedidos
+            </button>
+            <button
+              type="button"
+              data-testid="tab-catalogo"
+              onClick={() => setTab("catalogo")}
+              className={`rounded px-3 py-1 text-sm ${tab === "catalogo" ? "bg-slate-100 text-slate-950" : "border border-slate-700"}`}
+            >
+              Catálogo
+            </button>
+          </div>
+          {tab === "pedidos" ? (
+            <OrdersManager tenantId={tenant.id} />
+          ) : (
+            <CatalogManager tenantId={tenant.id} isAdmin={isAdmin} />
+          )}
+        </>
+      )}
     </div>
   );
 }

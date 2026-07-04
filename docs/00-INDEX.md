@@ -199,7 +199,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 
 | ID | Documento | Propósito | Rol | Depende de | Estado |
 |---|---|---|---|---|---|
-| 02-01 | Requisitos funcionales | RF por módulo del core (identidad/tenancy, catálogo, pedidos, pagos, inventario, notificaciones, panel) + módulos de restaurantes (v1). **v0.1 (En revisión) cubre solo catálogo** — el resto se añade just-in-time por fase. | PM | 01-01, 03-03 | En revisión |
+| 02-01 | Requisitos funcionales | RF por módulo del core (identidad/tenancy, catálogo, pedidos, pagos, inventario, notificaciones, panel) + módulos de restaurantes (v1). **v0.2 (En revisión) cubre catálogo + pedidos/inventario básico** — pagos/notificaciones/panel se añaden just-in-time por fase. | PM | 01-01, 03-03, 03-05 | En revisión |
 | 02-02 | Requisitos no funcionales | Aislamiento multi-tenant, rendimiento, disponibilidad, seguridad, idempotencia/consistencia, white-label, i18n, límites, costo objetivo. | CTO | 01-01 | En cola |
 | 02-03 | Historias y criterios de aceptación | Historias con criterios Gherkin trazadas a RF; base de 06 y 07. | QA | 02-01 | En cola |
 
@@ -209,9 +209,9 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 |---|---|---|---|---|---|
 | 03-01 | Visión de arquitectura (C4) | C4 (contexto/contenedores/componentes) de la plataforma modular multi-tenant; principios; estilo edge-first con event-log. | CTO | 02-02 | En cola |
 | 03-02 | Tenancy y aislamiento | Multi-tenant: shared-schema + RLS por defecto; aislamiento por niveles (esquema/DB dedicado para enterprise); resolución de tenant; blast radius. | CTO | ADR-002, ADR-007, 01-04 | **Vigente** |
-| 03-03 | Modelo de datos y ERD | Esquema multi-tenant (tenant_id, RLS), entidades del core (tenants, usuarios, roles, productos, inventario, pedidos, items, pagos, mensajes, event_log) y límites por módulo; ERD. **v1.1 (Vigente) cubre núcleo + `jobs` (T2.2) + `productos`/Storage (T3.1)** — pedidos/pagos/mensajería se añaden just-in-time por fase (§1.1, §9). | CTO | 03-02, 01-04 | **Vigente** |
+| 03-03 | Modelo de datos y ERD | Esquema multi-tenant (tenant_id, RLS), entidades del core (tenants, usuarios, roles, productos, inventario, pedidos, items, pagos, mensajes, event_log) y límites por módulo; ERD. **v1.2 (Vigente) cubre núcleo + `jobs` (T2.2) + `productos`/Storage (T3.1) + `orders`/`order_items`/`stock_reservations` (T4.1)** — pagos/mensajería se añaden just-in-time por fase (§1.1, §9). | CTO | 03-02, 01-04, 03-05 | **Vigente** |
 | 03-04 | Sistema de módulos y entitlements | Registro de módulos, activación por tenant/vertical, feature flags, límites de acoplamiento entre módulos, extensibilidad. **(Pilar nuevo.)** | CTO | 03-01, ADR-008, 01-05 | En cola |
-| 03-05 | Máquina de estados del pedido | FSM del módulo Pedidos (v1 restaurantes): estados, transiciones, reserva de stock, expiraciones, reversas, idempotencia. | CTO | 03-03, ADR-006 | En cola |
+| 03-05 | Máquina de estados del pedido | FSM del módulo Pedidos (v1 restaurantes): estados, transiciones, reserva de stock, expiraciones, reversas, idempotencia. | CTO | 03-03, ADR-006 | En revisión |
 | 03-06 | Contrato de API y Edge Functions | Endpoints internos y Edge Functions (webhooks pago/WhatsApp, envío de mensajes, API del panel): contratos, validación de firma, idempotencia, contexto de tenant. | CTO | 03-03, 03-04 | En cola |
 | 03-07 | Capa de pagos multi-pasarela | Abstracción de pasarelas (Nequi, Wompi, Mercado Pago, PayU, ePayco); sin agregador, fondos directos al tenant; credenciales por tenant cifradas; getstatus como verdad. | CTO | 03-05, 03-06, ADR-003 | En cola |
 | 03-08 | Integración WhatsApp | Recepción/envío, plantillas, tokens, quality rating, versionado; **decisión de onboarding a escala reabierta** (Meta directo vs BSP/Embedded Signup). | CTO | 03-06, ADR-001 | En cola |
@@ -332,14 +332,14 @@ Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 
 | Métrica | Valor |
 |---|---|
 | Documentos totales (catálogo) | 35 |
-| Vigentes | 5 (`01-01`, `01-04`, `03-02`, `03-03` v1.1 núcleo+catálogo, `06-01` v1.0 aislamiento) |
-| En revisión | 1 (`02-01` v0.1 RF de catálogo — pendiente de aprobación del owner) |
+| Vigentes | 5 (`01-01`, `01-04`, `03-02` v1.1, `03-03` v1.2 núcleo+catálogo+pedidos, `06-01` v1.0 aislamiento) |
+| En revisión | 2 (`02-01` v0.2 RF catálogo+pedidos, `03-05` FSM del pedido — pendientes de aprobación del owner) |
 | En redacción | 1 (`08-03`) |
-| En cola | 28 |
+| En cola | 27 |
 | ADR totales | 12 |
 | ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
 | ADR Propuestos | 0 |
-| Próximo documento a redactar | Ninguno pendiente de DMV. Fase 3 (catálogo, T3.1) ya redactó sus docs just-in-time (`03-03` v1.1, `02-01` v0.1). El resto del catálogo se redacta just-in-time por fase (§9). |
+| Próximo documento a redactar | Ninguno pendiente de DMV. Fases 3 y 4 ya redactaron sus docs just-in-time (`03-03` v1.2, `03-05`, `02-01` v0.2). El resto del catálogo se redacta just-in-time por fase (§9). |
 | Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---

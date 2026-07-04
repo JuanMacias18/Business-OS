@@ -4,11 +4,11 @@
 |---|---|
 | Documento | Tenancy y aislamiento multi-tenant |
 | Estado | **Vigente** |
-| Versión | 1.0.0 |
-| Última actualización | 2026-07-02 |
+| Versión | 1.1.0 |
+| Última actualización | 2026-07-03 |
 | Responsable | CTO |
 | Depende de | `ADR-002`, `ADR-007` (nota C7), `01-04` (glosario). **No** depende de `03-01` (C4): ese documento se redacta post-v1, describiendo el sistema ya real (`00-INDEX` §9) — aquí no se asume su existencia. |
-| Es dependencia de | `03-03`, `03-04`, `04-01`, `04-02`, `05-02`, `05-05`, `06-01`, y las tareas T2.1/T2.3 del plan de entrega |
+| Es dependencia de | `03-03`, `03-04`, `04-01`, `04-02`, `05-02`, `05-05`, `06-01`, y las tareas T2.1/T2.3/T4.1 del plan de entrega |
 
 ---
 
@@ -172,6 +172,16 @@ create policy "..."
 ```
 
 Regla general para el resto del proyecto: **toda policy cuya condición necesite mirar más allá de "esta fila me pertenece" — cruzar con otra tabla, o consultar la misma tabla desde otro ángulo — se escribe como función `security definer`, nunca como subconsulta inline.** Esto no es un parche puntual de `profiles`/`memberships`; es el patrón a seguir en `03-04` en adelante (p. ej. la FSM de pedidos y las policies de catálogo probablemente lo necesiten).
+
+### 5.7 Toda función nueva es ejecutable por `PUBLIC` hasta que se revoque explícitamente
+
+Hallazgo de T4.1 (aplica retroactivamente a `process_pending_jobs()` de T2.2, corregido en la misma migración): Postgres concede `EXECUTE` a `PUBLIC` por defecto en cualquier función nueva — incluida una `security definer` que hace un barrido cross-tenant (`expirar_reservas_vencidas()`, `process_pending_jobs()`). Sin revocarlo explícitamente, cualquier `authenticated`/`anon` podría invocar directamente una función pensada solo para un scheduler o un proceso interno, disparando efectos sobre **todos** los tenants a la vez.
+
+Regla: toda función `security definer` que no esté pensada para ser llamada por un cliente autenticado normal (típicamente, las que no filtran por `current_tenant_id()` porque operan cross-tenant a propósito) termina su definición con:
+
+```sql
+revoke execute on function public.<nombre>(<firma>) from public, anon, authenticated;
+```
 
 ## 6. Blast radius y mitigaciones
 

@@ -52,3 +52,9 @@ begin
   return processed_count;
 end;
 $$;
+
+-- Postgres concede EXECUTE a PUBLIC por defecto en toda funcion
+-- nueva -- sin revocar esto, cualquier authenticated/anon podria
+-- disparar el procesamiento de TODOS los jobs de TODOS los tenants.
+-- Hallazgo de T4.1 (mismo patron aplicado a expirar_reservas_vencidas).
+revoke execute on function public.process_pending_jobs() from public, anon, authenticated;
