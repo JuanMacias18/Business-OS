@@ -82,7 +82,14 @@ jobs:
           SUPABASE_URL: ${{ steps.creds.outputs.url }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ steps.creds.outputs.service_role_key }}
           SUPABASE_ANON_KEY: ${{ steps.creds.outputs.anon_key }}
-        run: deno test --config supabase/functions/deno.json --allow-net --allow-env supabase/functions supabase/tests/concurrency
+          # Secrets de sandbox de Wompi (Settings -> Secrets -> Actions).
+          # Sin configurarlos, los tests de Fase 5 que llaman a la API
+          # real de Wompi se saltan solos (no fallan) -- ver 03-07.
+          WOMPI_TEST_PUBLIC_KEY: ${{ secrets.WOMPI_TEST_PUBLIC_KEY }}
+          WOMPI_TEST_PRIVATE_KEY: ${{ secrets.WOMPI_TEST_PRIVATE_KEY }}
+          WOMPI_TEST_EVENTS_SECRET: ${{ secrets.WOMPI_TEST_EVENTS_SECRET }}
+          WOMPI_TEST_INTEGRITY_SECRET: ${{ secrets.WOMPI_TEST_INTEGRITY_SECRET }}
+        run: deno test --config supabase/functions/deno.json --allow-net --allow-env --allow-read supabase/functions supabase/tests/concurrency
 
       - if: always()
         run: supabase stop --no-backup

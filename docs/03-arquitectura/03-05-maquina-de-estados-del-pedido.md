@@ -87,11 +87,13 @@ where id = <producto_id> and tenant_id = <tenant_id>;
 
 A diferencia del catálogo (solo `admin` escribe), **cualquier miembro del tenant** (`admin` o `staff`) puede crear y operar pedidos — es el trabajo del día a día de `staff` (`03-02` §7). No hay restricción de rol adicional en v1 sobre quién dispara cada transición.
 
+**Actualización T5.1:** `solicitar_pago()`, `confirmar_pago()`, `cancelar_pedido()` y `avanzar_pedido()` también aceptan invocaciones de `service_role` (el webhook de pagos y el job de conciliación de `03-07` no tienen sesión de usuario) — ver el patrón `es_llamada_de_servicio()` en `03-02` §5.8. El chequeo de tenant para usuarios autenticados normales no cambia.
+
 ## 7. No-objetivos de esta versión
 
-- Sin integración real de pasarela (Fase 5); `confirmar_pago()` se invoca manualmente en el walking skeleton, no desde un webhook real todavía.
-- Sin estado `rechazado` explícito: cuando la pasarela real entre en Fase 5, un pago rechazado por la pasarela probablemente mapea a una transición `pendiente_pago → cancelado` o a un estado nuevo — se decide en `03-07`, no aquí.
-- Sin cancelación después de confirmado (reembolsos) — eso depende de la pasarela real, Fase 5.
+- ~~Sin integración real de pasarela~~ — **implementada en T5.1** (`03-07`): `confirmar_pago()`/`cancelar_pedido()` ahora los dispara el webhook real de Wompi (getstatus-como-verdad), no solo la invocación manual del walking skeleton — que sigue disponible como control manual.
+- Sin estado `rechazado` explícito: **decidido en T5.1** (`03-07` §5) — un pago `DECLINED`/`VOIDED`/`ERROR` mapea a `pendiente_pago → cancelado`, reutilizando la transición existente.
+- Sin cancelación después de confirmado (reembolsos) — sigue pendiente, depende de necesidad real de negocio.
 - Sin servicio en mesa/comandas (`01-01` §6.2).
 - Sin disparador automático de `expirar_reservas_vencidas()` (ver §5) — se activa cuando haga falta operacionalmente.
 - Sin modificadores/variantes por ítem del pedido — un `order_item` es simplemente `producto_id` + `cantidad`.

@@ -92,6 +92,33 @@ export function OrdersManager({ tenantId }: { tenantId: string }) {
     await loadOrders();
   }
 
+  async function abrirCheckoutWompi(orderId: string) {
+    setError(null);
+    const { data, error: checkoutError } = await supabase
+      .rpc("preparar_checkout_pago", { p_order_id: orderId })
+      .single<{
+        public_key: string;
+        reference: string;
+        amount_in_cents: number;
+        currency: string;
+        signature: string;
+      }>();
+    if (checkoutError || !data) {
+      setError(checkoutError?.message ?? "no se pudo preparar el checkout");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      "public-key": data.public_key,
+      currency: data.currency,
+      "amount-in-cents": String(data.amount_in_cents),
+      reference: data.reference,
+      "signature:integrity": data.signature,
+      "redirect-url": window.location.href,
+    });
+    window.open(`https://checkout.wompi.co/p/?${params.toString()}`, "_blank");
+  }
+
   return (
     <div data-testid="orders-manager" className="flex w-full max-w-xl flex-col gap-4">
       <form onSubmit={handleCreateOrder} data-testid="create-order-form" className="flex gap-2">
@@ -149,11 +176,20 @@ export function OrdersManager({ tenantId }: { tenantId: string }) {
               <>
                 <button
                   type="button"
+                  data-testid={`pagar-wompi-${order.id}`}
+                  onClick={() => abrirCheckoutWompi(order.id)}
+                  className="rounded border border-indigo-700 px-2 py-1 text-xs text-indigo-400"
+                >
+                  Pagar con Wompi
+                </button>
+                <button
+                  type="button"
                   data-testid={`confirmar-pago-${order.id}`}
                   onClick={() => runAction(() => supabase.rpc("confirmar_pago", { p_order_id: order.id }))}
                   className="rounded border border-emerald-700 px-2 py-1 text-xs text-emerald-400"
+                  title="Simulacion manual -- el flujo real confirma solo via el webhook de Wompi"
                 >
-                  Confirmar pago
+                  Confirmar pago (manual)
                 </button>
                 <button
                   type="button"

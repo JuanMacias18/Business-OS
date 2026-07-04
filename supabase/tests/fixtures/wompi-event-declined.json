@@ -1,0 +1,28 @@
+{
+  "event": "transaction.updated",
+  "data": {
+    "transaction": {
+      "id": "12130153-1783156682-20667",
+      "amount_in_cents": 3000000,
+      "reference": "fixture-declined-1783156681",
+      "customer_email": "fixture-declined@example.com",
+      "currency": "COP",
+      "payment_method_type": "CARD",
+      "redirect_url": null,
+      "status": "DECLINED",
+      "shipping_address": null,
+      "payment_link_id": null,
+      "payment_source_id": null
+    }
+  },
+  "signature": {
+    "properties": [
+      "transaction.id",
+      "transaction.status",
+      "transaction.amount_in_cents"
+    ],
+    "checksum": "DF417DD2A91DA76E08DE37C15577053323398F8EBC54C2A4681FA6BC9F672387"
+  },
+  "timestamp": 1783156620,
+  "sent_at": "2026-07-04T09:17:00.000Z"
+}

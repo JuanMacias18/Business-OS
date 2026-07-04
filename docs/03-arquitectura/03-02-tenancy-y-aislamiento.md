@@ -4,11 +4,11 @@
 |---|---|
 | Documento | Tenancy y aislamiento multi-tenant |
 | Estado | **Vigente** |
-| Versión | 1.1.0 |
-| Última actualización | 2026-07-03 |
+| Versión | 1.2.0 |
+| Última actualización | 2026-07-04 |
 | Responsable | CTO |
 | Depende de | `ADR-002`, `ADR-007` (nota C7), `01-04` (glosario). **No** depende de `03-01` (C4): ese documento se redacta post-v1, describiendo el sistema ya real (`00-INDEX` §9) — aquí no se asume su existencia. |
-| Es dependencia de | `03-03`, `03-04`, `04-01`, `04-02`, `05-02`, `05-05`, `06-01`, y las tareas T2.1/T2.3/T4.1 del plan de entrega |
+| Es dependencia de | `03-03`, `03-04`, `04-01`, `04-02`, `05-02`, `05-05`, `06-01`, y las tareas T2.1/T2.3/T4.1/T5.1 del plan de entrega |
 
 ---
 
@@ -182,6 +182,36 @@ Regla: toda función `security definer` que no esté pensada para ser llamada po
 ```sql
 revoke execute on function public.<nombre>(<firma>) from public, anon, authenticated;
 ```
+
+**Matiz importante (hallazgo de T5.1):** `service_role` **no es superusuario** (verificado: `rolsuper = false`; solo tiene `rolbypassrls = true`, un permiso distinto — bypassa RLS, no privilegios de función). Al revocar `EXECUTE` de `PUBLIC`, `service_role` **también** pierde el acceso implícito que tenía por defecto. Si una Edge Function (que corre como `service_role`) necesita invocar esa función, hace falta un `grant` explícito adicional:
+
+```sql
+grant execute on function public.<nombre>(<firma>) to service_role;
+```
+
+Solo `postgres` (el dueño de la función) queda con acceso si se omite este paso — suficiente para invocarla manualmente en un test, pero no desde una Edge Function real.
+
+### 5.8 Una función `security definer` tenant-scoped necesita una vía explícita para `service_role`
+
+Hallazgo de T5.1, al conectar el primer webhook real: `solicitar_pago()`, `confirmar_pago()`, `cancelar_pedido()` y `avanzar_pedido()` (`03-05`) exigían `tenant_id = current_tenant_id()` — que solo existe cuando hay un JWT de **usuario autenticado** (§3). Un webhook de pagos corre como `service_role`, sin sesión de usuario (exactamente el caso que `CLAUDE.md` regla #4 anticipa): `current_tenant_id()` da `NULL`, y esas cuatro funciones rechazaban **cualquier** pedido al invocarlas desde el webhook.
+
+**Cómo NO detectar "esto viene de `service_role`" dentro de una función `security definer`** (verificado empíricamente, ambos son trampas):
+- `session_user` — siempre da `authenticator` (el rol técnico con el que PostgREST abre la conexión), sin importar el rol efectivo de la request.
+- `current_user` — dentro de una función `security definer`, refleja al **dueño de la función** (`postgres`), no a quien la invocó.
+
+**La forma correcta**: leer el claim de rol directamente del JWT, el mismo mecanismo que ya usa `current_tenant_id()` (§3.3):
+
+```sql
+create or replace function public.es_llamada_de_servicio()
+returns boolean
+language sql
+stable
+as $$
+  select coalesce(auth.jwt() ->> 'role', '') = 'service_role'
+$$;
+```
+
+Y el chequeo de tenant se relaja a: `tenant_id = public.current_tenant_id() or public.es_llamada_de_servicio()`. Regla general: toda función tenant-scoped que un proceso de backend (webhook, job de conciliación, scheduler futuro) también necesite invocar sin sesión de usuario sigue este patrón — nunca se relaja quitando el chequeo de tenant sin más, porque seguiría siendo necesario para las llamadas de clientes autenticados reales.
 
 ## 6. Blast radius y mitigaciones
 

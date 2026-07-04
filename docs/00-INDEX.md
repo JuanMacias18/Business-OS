@@ -213,7 +213,7 @@ Roles: **PM** Product · **CTO** CTO/Arquitecto · **SEC** Security · **DEV** D
 | 03-04 | Sistema de módulos y entitlements | Registro de módulos, activación por tenant/vertical, feature flags, límites de acoplamiento entre módulos, extensibilidad. **(Pilar nuevo.)** | CTO | 03-01, ADR-008, 01-05 | En cola |
 | 03-05 | Máquina de estados del pedido | FSM del módulo Pedidos (v1 restaurantes): estados, transiciones, reserva de stock, expiraciones, reversas, idempotencia. | CTO | 03-03, ADR-006 | En revisión |
 | 03-06 | Contrato de API y Edge Functions | Endpoints internos y Edge Functions (webhooks pago/WhatsApp, envío de mensajes, API del panel): contratos, validación de firma, idempotencia, contexto de tenant. | CTO | 03-03, 03-04 | En cola |
-| 03-07 | Capa de pagos multi-pasarela | Abstracción de pasarelas (Nequi, Wompi, Mercado Pago, PayU, ePayco); sin agregador, fondos directos al tenant; credenciales por tenant cifradas; getstatus como verdad. | CTO | 03-05, 03-06, ADR-003 | En cola |
+| 03-07 | Capa de pagos multi-pasarela | Abstracción de pasarelas (Nequi, Wompi, Mercado Pago, PayU, ePayco); sin agregador, fondos directos al tenant; credenciales por tenant cifradas; getstatus como verdad. **Wompi implementado y verificado en T5.1** (fixtures reales, GATE de Fase 5 verde 2 veces). | CTO | 03-05, ADR-003 | En revisión |
 | 03-08 | Integración WhatsApp | Recepción/envío, plantillas, tokens, quality rating, versionado; **decisión de onboarding a escala reabierta** (Meta directo vs BSP/Embedded Signup). | CTO | 03-06, ADR-001 | En cola |
 | 03-09 | White-label y theming | Branding por tenant (logo, colores, tokens de tema), dominios/subdominios personalizados, límites de personalización. **(Nuevo.)** | CTO | 03-01, ADR-009 | En cola |
 | 03-10 | Configuración regional e i18n | Region packs: pasarelas, impuestos, protección de datos, locale/moneda; cómo se añade una región sin tocar el core. **(Nuevo.)** | CTO | 03-07, ADR-010 | En cola |
@@ -332,14 +332,14 @@ Denominador: filas del catálogo §4.1-4.9 (35 documentos) + filas de §4.4 (12 
 | Métrica | Valor |
 |---|---|
 | Documentos totales (catálogo) | 35 |
-| Vigentes | 5 (`01-01`, `01-04`, `03-02` v1.1, `03-03` v1.2 núcleo+catálogo+pedidos, `06-01` v1.0 aislamiento) |
-| En revisión | 2 (`02-01` v0.2 RF catálogo+pedidos, `03-05` FSM del pedido — pendientes de aprobación del owner) |
+| Vigentes | 5 (`01-01`, `01-04`, `03-02` v1.2, `03-03` v1.2 núcleo+catálogo+pedidos, `06-01` v1.0 aislamiento) |
+| En revisión | 3 (`02-01` v0.2 RF catálogo+pedidos, `03-05` FSM del pedido, `03-07` capa de pagos — pendientes de aprobación del owner) |
 | En redacción | 1 (`08-03`) |
-| En cola | 27 |
+| En cola | 26 |
 | ADR totales | 12 |
 | ADR Aceptados | 12 (9 Aceptado, 2 Aceptado-costura: 009/010, 1 con disparador de supersede: 001) |
 | ADR Propuestos | 0 |
-| Próximo documento a redactar | Ninguno pendiente de DMV. Fases 3 y 4 ya redactaron sus docs just-in-time (`03-03` v1.2, `03-05`, `02-01` v0.2). El resto del catálogo se redacta just-in-time por fase (§9). |
+| Próximo documento a redactar | Ninguno pendiente de DMV. Fases 3, 4 y 5 ya redactaron sus docs just-in-time (`03-03` v1.2, `03-05`, `03-07`, `02-01` v0.2). El resto del catálogo se redacta just-in-time por fase (§9). |
 | Auditorías finales | Reemplazadas por mini-auditorías por lote (§6); auditoría final ligera pendiente |
 
 ---

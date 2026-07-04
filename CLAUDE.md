@@ -27,11 +27,15 @@ docs/              # documentación (docs-as-code)
 pnpm dev             # panel local
 pnpm db:reset        # supabase db reset (migraciones + seed)
 supabase test db     # suite pgTAP (incluye aislamiento — FF-1)
-deno test --config supabase/functions/deno.json --allow-net --allow-env supabase/functions supabase/tests/concurrency
+deno test --config supabase/functions/deno.json --allow-net --allow-env --allow-read supabase/functions supabase/tests/concurrency
                      # tests de Edge Functions (incluye replay — FF-4) + tests de
                      # concurrencia (LOOP B, ver 03-05). Requieren SUPABASE_URL/
                      # SUPABASE_SERVICE_ROLE_KEY/SUPABASE_ANON_KEY del stack local
-                     # (`supabase status`); sin ellas, se saltan solos.
+                     # (`supabase status`); sin ellas, se saltan solos. Los tests de
+                     # pagos (Fase 5, 03-07) ademas requieren WOMPI_TEST_PUBLIC_KEY/
+                     # WOMPI_TEST_PRIVATE_KEY/WOMPI_TEST_EVENTS_SECRET/
+                     # WOMPI_TEST_INTEGRITY_SECRET (llaves de sandbox, nunca
+                     # hardcodeadas — repo público). En CI son secrets del repo.
 pnpm lint && pnpm typecheck && pnpm test
 pnpm e2e             # Playwright
 ```

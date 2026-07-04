@@ -1,0 +1,28 @@
+{
+  "event": "transaction.updated",
+  "data": {
+    "transaction": {
+      "id": "12130153-1783156616-58020",
+      "amount_in_cents": 5000000,
+      "reference": "fixture-test-1783156614",
+      "customer_email": "fixture-test@example.com",
+      "currency": "COP",
+      "payment_method_type": "CARD",
+      "redirect_url": null,
+      "status": "APPROVED",
+      "shipping_address": null,
+      "payment_link_id": null,
+      "payment_source_id": null
+    }
+  },
+  "signature": {
+    "properties": [
+      "transaction.id",
+      "transaction.status",
+      "transaction.amount_in_cents"
+    ],
+    "checksum": "509BF17C30AF944F4133247A8EE6A0609178B704994241B397A4945F577EE298"
+  },
+  "timestamp": 1783156620,
+  "sent_at": "2026-07-04T09:17:00.000Z"
+}

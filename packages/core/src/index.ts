@@ -1,6 +1,14 @@
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 
 export type { Session, SupabaseClient };
+export type {
+  PaymentGateway,
+  PaymentGatewayCredentials,
+  PaymentStatus,
+  CheckoutData,
+  TransactionStatus,
+  WebhookEvent,
+} from "./payment-gateway";
 
 /**
  * Cliente Supabase tipado para uso en apps/ (panel).
